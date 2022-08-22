@@ -8,8 +8,8 @@ const userSchema = mongoose.Schema({
     password:{type: String, required: true},
     isAdmin: {type: Boolean, require: true, default: false},
     imageUrl: {type: String, default:'/images/default_avatar.png'},
-    followers: [type: String, ref: "User", default: 0],
-    following: [type: String, ref: "User", default: 0],
+    followers: [{type: String, ref: "User", default: 0}],
+    following: [{type: String, ref: "User", default: 0}],
 }, {timestamps: true,})
 
 //makesure that 2 users can't share the same email address before register
