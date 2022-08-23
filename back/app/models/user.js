@@ -3,10 +3,10 @@ const uniqueValidator = require('mongoose-unique-validator');
 
 //Create schema of user information
 const userSchema = mongoose.Schema({
-    pseudo:{type: String, require: true, unique: true, minlength: 3, maxlength: 35, trim: true },
+    pseudo:{type: String, required: true, unique: true, minlength: 3, maxlength: 35, trim: true },
     email:{type: String, required: true, unique: true, lowercase: true, trim: true, validate: [isEmail]},
     password:{type: String, required: true},
-    isAdmin: {type: Boolean, require: true, default: false},
+    isAdmin: {type: Boolean, required: true, default: false},
     imageUrl: {type: String, default:'/images/default_avatar.png'},
     followers: [{type: String, ref: "User", default: 0}],
     following: [{type: String, ref: "User", default: 0}],
