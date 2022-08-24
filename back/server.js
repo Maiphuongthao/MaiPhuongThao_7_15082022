@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 require('./app/config/db.config')
+const route = require('./app/routes/index');
 
 const app = express();
 
@@ -29,6 +30,9 @@ app.use((req, res, next) => {
   app.use(cors(corsOptions));
   app.use(express.json());//Recognize JSON object
   app.use(express.urlencoded({ extended: true }));//recognize object as strings or arrays
+
+//route
+app.use('/api', route);
 
 
 //running port
