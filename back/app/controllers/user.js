@@ -11,7 +11,7 @@ const { signUpErrors, logInErrors } = require("../errors/errors");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
-  var bytes = CryptoJS.AES.encrypt(
+  return CryptoJS.AES.encrypt(
     value,
     CryptoJS.enc.Base64.parse(process.env.CRYPTO_KEY),
     {
@@ -19,8 +19,7 @@ function encrypt(value) {
       mode: CryptoJS.mode.ECB,
       padding: CryptoJS.pad.Pkcs7,
     }
-  );
-  return bytes.toString();
+  ).toString();
 }
 
 function decrypt(value) {
@@ -52,6 +51,8 @@ exports.signup = (req, res, next) => {
       user
         .save()
         .then((newUser) => {
+            newUser.email = decrypt(newUser.email);
+            
           res.status(201).json({ message: "User created !", newUser });
         })
         .catch((error) => {
@@ -63,16 +64,20 @@ exports.signup = (req, res, next) => {
 };
 
 ///////////////// LOGIN USER ///////////////////////////
-exports.login = (req, res, next) => {
+exports.login = (req, res, next) => {console.log("email"+req.body.email);
+    
   //Showing encrypted email and check with user given email
   const encryptedEmail = encrypt(req.body.email);
+  
   User.findOne({ email: encryptedEmail })
     .then((user) => {
+        
       if (!user) {
         return res.status(401).json({ error: "User not found !" });
       }
       //decrypte email from encrypted to compare with given email by user
       user.email = decrypt(user.email);
+      
       bcrypt
         .compare(req.body.password, user.password)
         .then((valid) => {
@@ -82,6 +87,7 @@ exports.login = (req, res, next) => {
               .json({ error: "Your password is incorrect !" });
           }
           //Creating an access token
+          
           const accessToken = jwt.sign(
             //userId entant playload
             { userId: user._id },
@@ -108,6 +114,7 @@ exports.login = (req, res, next) => {
           });
 
           res.status(200).json({
+            userId: user._id,
             //chiffrer un nouveau token
             accessToken,
             //return user as correct user
