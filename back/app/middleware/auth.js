@@ -6,19 +6,17 @@ module.exports = (req, res, next) => {
   try {
     //get header and split it after space which is 2nd
 
-    const token = req.headers.authorization.split(" ")[1];
-    
+    let token = req.headers.authorization.split(' ')[1];
     //decode the token
-    
+
     const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET);
-    
 
     //get userId as decode token userID
     const userId = decodedToken.userId;
-   
+
     //add this value to request to call it after
     req.auth = {
-      userId: userId,
+      userId
     };
 
     //Check if userId exist in body and if it isn't the same as userID of sauce then return error message, if not continue
@@ -27,7 +25,7 @@ module.exports = (req, res, next) => {
     } else {
       next();
     }
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     res.status(403).json({ error: "unauthorized request" });
   }
