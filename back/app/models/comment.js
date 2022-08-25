@@ -16,12 +16,16 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
 
+    imageUrl:{
+      type:String,
+    },
+
     content: {
       type: String,
       trim: true,
       maxlength: 300,
     },
-    likes: {type: Number, default: 0},
+    likes: { type: Number, default: 0 },
 
     usersLiked: [
       {

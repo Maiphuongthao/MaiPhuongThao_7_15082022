@@ -10,7 +10,6 @@ const { signUpErrors, logInErrors } = require("../errors/errors");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
-    
   return CryptoJS.AES.encrypt(
     value,
     CryptoJS.enc.Base64.parse(process.env.CRYPTO_KEY),
@@ -63,7 +62,8 @@ exports.signup = (req, res, next) => {
 };
 
 ///////////////// LOGIN USER ///////////////////////////
-exports.login = (req, res, next) => {console.log('email' + req.body);
+exports.login = (req, res, next) => {
+  console.log("email" + req.body);
   //Showing encrypted email and check with user given email
   const encryptedEmail = encrypt(req.body.email);
 
@@ -81,7 +81,7 @@ exports.login = (req, res, next) => {console.log('email' + req.body);
             return res
               .status(401)
               .json({ error: "Your password is incorrect !" });
-          };
+          }
           //Creating an access token
 
           const accessToken = jwt.sign(
@@ -285,8 +285,11 @@ exports.deleteUser = (req, res, next) => {
       } else {
         const filename = user.imageUrl.split("/images/")[1];
         fs.unlink(`images/${filename}`, () => {
-          Sauce.deleteOne({ _id: req.params.id })
+          User.deleteOne({ _id: req.params.id })
             .then(() => {
+              Post.deleteMany({ userId: req.params.userId })
+                .then(() => res.status(204).send())
+                .catch((error) => res.status(400).json(error));
               res.status(204).send();
             })
             .catch((error) => res.status(400).json({ error }));
