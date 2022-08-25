@@ -9,17 +9,24 @@ const commentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
     postId: {
       type: String,
       ref: "Post",
       required: true,
     },
-    message: {
+
+    imageUrl:{
+      type:String,
+    },
+
+    content: {
       type: String,
       trim: true,
-      maxlength: 1000,
+      maxlength: 300,
     },
-    likes: { type: Number },
+    likes: { type: Number, default: 0 },
+
     usersLiked: [
       {
         type: String,
