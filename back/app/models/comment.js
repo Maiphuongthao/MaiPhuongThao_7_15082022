@@ -15,11 +15,7 @@ const commentSchema = new mongoose.Schema(
       ref: "Post",
       required: true,
     },
-
-    imageUrl:{
-      type:String,
-    },
-
+    
     content: {
       type: String,
       trim: true,

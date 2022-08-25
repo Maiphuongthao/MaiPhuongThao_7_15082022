@@ -8,7 +8,8 @@ const commentRoutes = require('./comment');
 
 //path for routes
 router.use('/auth', userRoutes);
-//router.use('/post', postRoutes);
+router.use('/post', postRoutes);
+router.user('/comment', commentRoutes);
 
 
 module.exports = router;
