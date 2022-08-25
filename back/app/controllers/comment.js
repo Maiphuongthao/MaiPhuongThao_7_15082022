@@ -36,20 +36,15 @@ exports.readAllComments = (req, res, next) => {
 ///////////CREATE COMMENT///////////////////
 
 exports.createComment = (req, res, next) => {
-    //parse objet to string
-    const commentObject = JSON.parse(req.body.comment);
-    //delete the id as it'll be generate automatique
-    delete commentObject._id;
-    //create new post
-    const post = new Comment({
-      ...commentObject,
+    const comment = new Comment({
+      postId: req.auth.postId,
       userId: req.auth.userId,
-      imageUrl: req.file ? `/images/${req.file.filename}` : "",
+      content: req.auth.content
     });
-  
-    post
+    comment
       .save()
-      .then((newPost) => {
+      .then((newComment) => {
+        Post.findByIdAndUpdate(newComment.postId,{})
         res.status(201).json(newPost);
       })
       .catch((error) => {
