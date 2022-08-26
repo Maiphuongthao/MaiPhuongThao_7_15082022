@@ -8,3 +8,5 @@ router.get("/:id", auth, commentCtrl.readOneComment);
 router.post("/", auth, commentCtrl.createComment);
 router.put("/:id", auth, commentCtrl.updateComment);
 router.delete("/:id", auth, commentCtrl.deleteComment);
+
+module.exports = router;

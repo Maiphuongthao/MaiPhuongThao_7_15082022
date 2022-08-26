@@ -44,24 +44,26 @@ exports.createComment = (req, res, next) => {
     comment
       .save()
       .then((newComment) => {
-        Post.findByIdAndUpdate(newComment.postId,{
+        Post.findByIdAndUpdate(
+          newComment.postId,{
           $push:{
             comments:newComment._id
-          },
+          }},
           {new: true,
           setDefaultsOnInsert: true,
         upsert: true}
-        })
+        )
         res.status(201).json(newComment);
       })
+      
       .catch((error) => {
         res.status(400).json({ error });
       });
-  };
+};
 
   /////////////////////UPDATE COMMENT//////////////////////
   exports.updateComment = (req, res, next) => {
-    //get post id
+    //get comment id
     Comment.findById(req.params.id)
     .then((comment) => {
       if (comment.userId !== req.auth.userId) {
@@ -72,8 +74,8 @@ exports.createComment = (req, res, next) => {
           content: req.body.content},
           { new: true, setDefaultsOnInsert: true, updert: true }
         )
-          .then((postUpdated) => {
-            res.status(200).json(postUpdated);
+          .then((commentUpdated) => {
+            res.status(200).json(commentUpdated);
           })
           .catch((error) => {
             res.status(400).json({ error });

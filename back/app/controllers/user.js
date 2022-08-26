@@ -63,7 +63,6 @@ exports.signup = (req, res, next) => {
 
 ///////////////// LOGIN USER ///////////////////////////
 exports.login = (req, res, next) => {
-  console.log("email" + req.body);
   //Showing encrypted email and check with user given email
   const encryptedEmail = encrypt(req.body.email);
 
@@ -128,10 +127,13 @@ exports.login = (req, res, next) => {
 ////////////////REFRESH TOKEN ROUTE////////////////////
 //whenever a token expires or user refresh, a new access token can be created
 
-exports.refresh = (req, res) => {
-  if (req.cookies?.jwt) {
+exports.refresh = (req, res, next) => {
+  debugger;
+  if (req.cookies?.jwt) {thao241190
+    
     //destructuring refreshtoken from cookie
     const refreshToken = req.cookies.jwt;
+    console.log('token'+refreshToken);
 
     //verifying refreshtoken
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (error, decoded) => {
@@ -140,8 +142,8 @@ exports.refresh = (req, res) => {
         return res.status(406).json({ message: "unauthorized" });
       } else {
         //correct token ==send new access token
-        const accessToken = jwt.sign(process.env.TOKEN_SECRET, {
-          expiresIn: "10m",
+        const accessToken = jwt.sign({userId: req.auth.userId},process.env.TOKEN_SECRET, {
+          expiresIn: "15m",
         });
         return res.json({ accessToken });
       }
