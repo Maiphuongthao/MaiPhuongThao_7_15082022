@@ -12,7 +12,7 @@ exports.readOnePost = (req, res, next) => {
       if (req.body.imageUrl) {
         post.imageUrl = `${req.protocol}://${req.get("host")}${post.imageUrl}`;
       }
-      res.status(200).json(post);
+      res.status(200).json(hateoasLinks(req, post, post._id));
     })
     .catch((error) =>
       res.status(404).json({
@@ -28,7 +28,7 @@ exports.readAllPosts = (req, res, next) => {
     .then((posts) => {
       posts = posts.map((post) => {
         post.imageUrl = `${req.protocol}://${req.get("host")}${post.imageUrl}`;
-        return { ...post.toObject() }; // return to js object
+        return hateoasLinks(req, post, post._id); // return to js object
       });
       res.status(200).json(posts);
     })
@@ -55,7 +55,7 @@ exports.createPost = (req, res, next) => {
   post
     .save()
     .then((newPost) => {
-      res.status(201).json(newPost);
+      res.status(201).json(hateoasLinks(req, newPost, newPost._id));
     })
     .catch((error) => {
       res.status(400).json({ error });
@@ -83,7 +83,7 @@ exports.likePost = (req, res, next) => {
               upsert: true,
             })
               .then((postUpdated) => {
-                res.status(200).json(postUpdated);
+                res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id));
               })
               .catch((error) => res.status(400).json({ error }));
           } else {
@@ -104,7 +104,7 @@ exports.likePost = (req, res, next) => {
               { new: true, setDefaultsOnInsert: true, upsert: true }
             )
               .then((postUpdated) => {
-                res.status(200).json(postUpdated);
+                res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id));
               })
               .catch((error) => res.status(400).json({ error }));
           } else {
@@ -151,7 +151,7 @@ exports.updatePost = (req, res, next) => {
         { new: true, setDefaultsOnInsert: true, updert: true }
       )
         .then((postUpdated) => {
-          res.status(200).json(postUpdated);
+          res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id));
         })
         .catch((error) => {
           res.status(400).json({ error });
@@ -183,4 +183,47 @@ exports.deletePost = (req, res, next) => {
     .catch((error) => {
       res.status(500).json({ error });
     });
+};
+
+
+const hateoasLinks = (req, post, id) => {
+  const hateoas = [
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/post/" + id}`,
+      rel: "readOne",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/post/"}`,
+      rel: "readALl",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/post/"}`,
+      rel: "create",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${
+        req.get("host") + "/api/post/" + id + "/like"
+      }`,
+      rel: "like",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/post/" + id}`,
+      rel: "update",
+      type: "PUT",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/post/" + id}`,
+      rel: "delete",
+      type: "DELETE",
+    },
+  ];
+
+  return {
+    ...post.toObject(),
+    links: hateoas,
+  };
 };

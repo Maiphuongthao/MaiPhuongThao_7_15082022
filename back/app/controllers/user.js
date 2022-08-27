@@ -99,7 +99,7 @@ exports.login = (req, res, next) => {
             process.env.REFRESH_TOKEN,
             { expiresIn: "24h" }
           );
-
+          const userSend = hateoasLinks(req, user, user._id);
           res.cookie("jwt", refreshToken, {
             httpOnly: true,
             //cookie is allowed in intersite context == protect from server attacking
@@ -112,8 +112,9 @@ exports.login = (req, res, next) => {
             userId: user._id,
             //chiffrer un nouveau token
             token: accessToken,
+            refreshToken: refreshToken,
             //return user as correct user
-            user: user,
+            userSend,
           });
         })
         .catch((error) => {
@@ -128,37 +129,51 @@ exports.login = (req, res, next) => {
 //whenever a token expires or user refresh, a new access token can be created
 
 exports.refresh = (req, res, next) => {
-  debugger;
-  if (req.cookies?.jwt) {thao241190
-    
-    //destructuring refreshtoken from cookie
-    const refreshToken = req.cookies.jwt;
-    console.log('token'+refreshToken);
+  const cookies = req.cookies;
 
-    //verifying refreshtoken
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (error, decoded) => {
-      if (error) {
-        //wrong refresh token
-        return res.status(406).json({ message: "unauthorized" });
-      } else {
-        //correct token ==send new access token
-        const accessToken = jwt.sign({userId: req.auth.userId},process.env.TOKEN_SECRET, {
+  if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
+
+  //destructuring refreshtoken from cookie
+  const refreshToken = cookies.jwt;
+
+  //verifying refreshtoken
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN,
+    async (error, decoded) => {
+      //wrong refresh token
+      if (error) return res.status(403).json({ message: "Forbidden" });
+
+      const foundUser = await User.findOne({
+        userId: decoded.userId,
+      }).exec();
+
+      if (!foundUser) return res.status(401).json({ message: "Unauthorized" });
+
+      //correct token ==send new access token
+      const accessToken = jwt.sign(
+        { userId: foundUser._id },
+        process.env.TOKEN_SECRET,
+        {
           expiresIn: "15m",
-        });
-        return res.json({ accessToken });
-      }
-    });
-  } else {
-    return res.status(406).json({ message: "unauthorized" });
-  }
+        }
+      );
+      res.json({ accessToken });
+    }
+  );
 };
 
 ///////////////////// LOGOUT /////////////////////////////////
 
 exports.logout = (req, res, next) => {
-  User.findById(req.auth.userId)
+  User.findOne({ _id: req.auth.userId })
     .then(() => {
-      res.clearCookie("jwt", { httpOnly: true });
+      const cookies = req.cookies;
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      });
       res.redirect("/");
       res.status(200).json({ message: "User logged out" });
     })
@@ -177,7 +192,7 @@ exports.readUserInfo = (req, res, next) => {
           (user.imageUrl = `${req.protocol}://${req.get("host")}${
             user.imageUrl
           }`);
-        res.status(200).json(user);
+        res.status(200).json(hateoasLinks(req, user, user._id));
       }
     })
     .catch((error) => res.status(500).json(error));
@@ -195,10 +210,8 @@ exports.readOneUser = (req, res, next) => {
         const userFound = {
           username: user.username,
           imageUrl: `${req.protocol}://${req.get("host")}${user.imageUrl}`,
-          followers: user.followers,
-          following: user.following,
         };
-        res.status(200).json(userFound);
+        res.status(200).json(hateoasLinks(req, userFound, userFound._id));
       }
     })
     .catch((error) => res.status(500).json(error));
@@ -270,7 +283,7 @@ exports.updateUser = (req, res, next) => {
           .then((updatedUser) => {
             //decrypt email to be returned
             updatedUser.email = decrypt(updatedUser.email);
-            res.status(200).json(updatedUser);
+            res.status(200).json(hateoasLinks(req, updatedUser, updatedUser._id));
           })
           .catch((error) => console.log(error));
       }
@@ -301,4 +314,60 @@ exports.deleteUser = (req, res, next) => {
     .catch((error) => {
       res.status(500).json({ error });
     });
+};
+
+//hateoas links
+const hateoasLinks = (req, user, id) => {
+  const hateoas = [
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/signup"}`,
+      rel: "signup",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/login"}`,
+      rel: "login",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/refresh"}`,
+      rel: "refresh",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/logout"}`,
+      rel: "logout",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/" + id}`,
+      rel: "readOneUser",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/"}`,
+      rel: "readUserInfo",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/export"}`,
+      rel: "export",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/"}`,
+      rel: "update",
+      type: "PUT",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/"}`,
+      rel: "delete",
+      type: "DELETE",
+    },
+  ];
+
+  return {
+    ...user.toObject(),
+    links: hateoas,
+  };
 };
