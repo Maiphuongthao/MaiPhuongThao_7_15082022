@@ -39,7 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieparser());
 
 app.get('/', function(req, res){
-  res.cookie('name', 'Groupomania').send('Bienvenue sur votre réseau entreprise Groupomania'); //Sets name = Groupomania
+  res.send('Bienvenue sur votre réseau entreprise Groupomania'); //Sets name = Groupomania
 });
 
 app.use("/api", router);
