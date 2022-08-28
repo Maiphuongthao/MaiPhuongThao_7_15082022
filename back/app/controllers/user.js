@@ -100,10 +100,10 @@ exports.login = (req, res, next) => {
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
-          res.cookie("jwt", refreshToken, {
-            httpOnly: true,
+          res.cookie('jwt', refreshToken, {
+            httpOnly: true,//accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
-            sameSite: "None",
+            sameSite: "None",//cross-site cookie
             secure: true,
             maxAge: 1000 * 60 * 60 * 24,
           });
@@ -166,16 +166,16 @@ exports.refresh = (req, res, next) => {
 ///////////////////// LOGOUT /////////////////////////////////
 
 exports.logout = (req, res, next) => {
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(204); //No content
   User.findOne({ _id: req.auth.userId })
     .then(() => {
-      const cookies = req.cookies;
       res.clearCookie("jwt", {
         httpOnly: true,
         sameSite: "None",
         secure: true,
       });
-      res.redirect("/");
-      res.status(200).json({ message: "User logged out" });
+      res.json({ message: "Cookie cleared" });
     })
     .catch((error) => res.status(404).json(error));
 };
@@ -283,7 +283,9 @@ exports.updateUser = (req, res, next) => {
           .then((updatedUser) => {
             //decrypt email to be returned
             updatedUser.email = decrypt(updatedUser.email);
-            res.status(200).json(hateoasLinks(req, updatedUser, updatedUser._id));
+            res
+              .status(200)
+              .json(hateoasLinks(req, updatedUser, updatedUser._id));
           })
           .catch((error) => console.log(error));
       }
