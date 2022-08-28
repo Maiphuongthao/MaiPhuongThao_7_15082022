@@ -10,7 +10,7 @@ const password = require('../middleware/password');
 router.post('/signup', password, userCtrl.signup);
 router.post('/login', ratelimiter, userCtrl.login);
 router.post('/refresh', auth, userCtrl.refresh);
-router.get('/logout', userCtrl.logout);
+router.get('/logout',auth, userCtrl.logout);
 router.get('/:id', auth, userCtrl.readOneUser);
 router.get('/', auth, userCtrl.readUserInfo);
 router.get('/export', auth, userCtrl.exportData);

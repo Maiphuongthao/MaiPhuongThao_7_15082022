@@ -7,6 +7,7 @@ const CryptoJS = require("crypto-js");
 require("dotenv").config();
 const fs = require("fs");
 const { signUpErrors, logInErrors } = require("../errors/errors");
+const user = require("../models/user");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
@@ -100,12 +101,12 @@ exports.login = (req, res, next) => {
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
-          
+
           res.cookie('jwt', refreshToken, {
             httpOnly: true,//accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
             sameSite: "None",//cross-site cookie
-            secure: true,
+            //secure: true,
             maxAge: 1000 * 60 * 60 * 24,
           });
 
@@ -130,7 +131,10 @@ exports.login = (req, res, next) => {
 //whenever a token expires or user refresh, a new access token can be created
 
 exports.refresh = (req, res, next) => {
+ 
   const cookies = req.cookies;
+
+console.log(req.cookies);
 
   if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
 
@@ -174,9 +178,9 @@ exports.logout = (req, res, next) => {
       res.clearCookie("jwt", {
         httpOnly: true,
         sameSite: "None",
-        secure: true,
+        //secure: true,
       });
-      res.json({ message: "Cookie cleared" });
+      res.json({ message: "User is logged out" });
     })
     .catch((error) => res.status(404).json(error));
 };
@@ -202,8 +206,9 @@ exports.readUserInfo = (req, res, next) => {
 ////////////////// READ ONE USER /////////////////////////
 
 exports.readOneUser = (req, res, next) => {
+  debugger;
   // Check the user login if it's existe
-  User.findById(req.params.userId)
+  User.findOne({_id:req.params.id})
     .then((user) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
@@ -211,7 +216,7 @@ exports.readOneUser = (req, res, next) => {
         const userFound = {
           username: user.username,
           imageUrl: `${req.protocol}://${req.get("host")}${user.imageUrl}`,
-        };
+        }
         res.status(200).json(hateoasLinks(req, userFound, userFound._id));
       }
     })
