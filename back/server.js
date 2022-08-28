@@ -38,6 +38,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieparser());
 
+app.get('/', function(req, res){
+  res.cookie('name', 'Groupomania').send('Bienvenue sur votre réseau entreprise Groupomania'); //Sets name = Groupomania
+});
+
 app.use("/api", router);
 //Mangae images as static eachtime its running after /images
 app.use("/images", express.static(path.join(__dirname, "images")));

@@ -100,6 +100,7 @@ exports.login = (req, res, next) => {
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
+          
           res.cookie('jwt', refreshToken, {
             httpOnly: true,//accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
