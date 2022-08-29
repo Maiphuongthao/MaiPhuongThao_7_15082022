@@ -7,6 +7,7 @@ const CryptoJS = require("crypto-js");
 require("dotenv").config();
 const fs = require("fs");
 const { signUpErrors, logInErrors } = require("../errors/errors");
+const user = require("../models/user");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
@@ -63,7 +64,6 @@ exports.signup = (req, res, next) => {
 
 ///////////////// LOGIN USER ///////////////////////////
 exports.login = (req, res, next) => {
-  console.log("email" + req.body);
   //Showing encrypted email and check with user given email
   const encryptedEmail = encrypt(req.body.email);
 
@@ -100,12 +100,13 @@ exports.login = (req, res, next) => {
             process.env.REFRESH_TOKEN,
             { expiresIn: "24h" }
           );
+          const userSend = hateoasLinks(req, user, user._id);
 
           res.cookie("jwt", refreshToken, {
-            httpOnly: true,
+            httpOnly: true, //accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
-            sameSite: "None",
-            secure: true,
+            sameSite: "None", //cross-site cookie
+            //secure: true,
             maxAge: 1000 * 60 * 60 * 24,
           });
 
@@ -113,8 +114,9 @@ exports.login = (req, res, next) => {
             userId: user._id,
             //chiffrer un nouveau token
             token: accessToken,
+            refreshToken: refreshToken,
             //return user as correct user
-            user: user,
+            userSend,
           });
         })
         .catch((error) => {
@@ -128,37 +130,56 @@ exports.login = (req, res, next) => {
 ////////////////REFRESH TOKEN ROUTE////////////////////
 //whenever a token expires or user refresh, a new access token can be created
 
-exports.refresh = (req, res) => {
-  if (req.cookies?.jwt) {
-    //destructuring refreshtoken from cookie
-    const refreshToken = req.cookies.jwt;
+exports.refresh = (req, res, next) => {
+  const cookies = req.cookies;
 
-    //verifying refreshtoken
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (error, decoded) => {
-      if (error) {
-        //wrong refresh token
-        return res.status(406).json({ message: "unauthorized" });
-      } else {
-        //correct token ==send new access token
-        const accessToken = jwt.sign(process.env.TOKEN_SECRET, {
-          expiresIn: "10m",
-        });
-        return res.json({ accessToken });
-      }
-    });
-  } else {
-    return res.status(406).json({ message: "unauthorized" });
-  }
+  console.log(req.cookies);
+
+  if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
+
+  //destructuring refreshtoken from cookie
+  const refreshToken = cookies.jwt;
+
+  //verifying refreshtoken
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN,
+    async (error, decoded) => {
+      //wrong refresh token
+      if (error) return res.status(403).json({ message: "Forbidden" });
+
+      const foundUser = await User.findOne({
+        userId: decoded.userId,
+      }).exec();
+
+      if (!foundUser) return res.status(401).json({ message: "Unauthorized" });
+
+      //correct token ==send new access token
+      const accessToken = jwt.sign(
+        { userId: foundUser._id },
+        process.env.TOKEN_SECRET,
+        {
+          expiresIn: "15m",
+        }
+      );
+      res.json({ accessToken });
+    }
+  );
 };
 
 ///////////////////// LOGOUT /////////////////////////////////
 
 exports.logout = (req, res, next) => {
-  User.findById(req.auth.userId)
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(204); //No content
+  User.findOne({ _id: req.auth.userId })
     .then(() => {
-      res.clearCookie("jwt", { httpOnly: true });
-      res.redirect("/");
-      res.status(200).json({ message: "User logged out" });
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        //secure: true,
+      });
+      res.json({ message: "User is logged out" });
     })
     .catch((error) => res.status(404).json(error));
 };
@@ -175,7 +196,7 @@ exports.readUserInfo = (req, res, next) => {
           (user.imageUrl = `${req.protocol}://${req.get("host")}${
             user.imageUrl
           }`);
-        res.status(200).json(user);
+        res.status(200).json(hateoasLinks(req, user, user._id));
       }
     })
     .catch((error) => res.status(500).json(error));
@@ -184,19 +205,17 @@ exports.readUserInfo = (req, res, next) => {
 ////////////////// READ ONE USER /////////////////////////
 
 exports.readOneUser = (req, res, next) => {
+  debugger;
   // Check the user login if it's existe
-  User.findById(req.params.userId)
+  User.findOne({ _id: req.params.id })
+    .select("-password -email")
     .then((user) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
       } else {
-        const userFound = {
-          username: user.username,
-          imageUrl: `${req.protocol}://${req.get("host")}${user.imageUrl}`,
-          followers: user.followers,
-          following: user.following,
-        };
-        res.status(200).json(userFound);
+        user.imageUrl = `${req.protocol}://${req.get("host")}${
+            user.imageUrl}`;
+        res.status(200).json(hateoasLinks(res, user, user._id));
       }
     })
     .catch((error) => res.status(500).json(error));
@@ -224,7 +243,7 @@ exports.exportData = (req, res, next) => {
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
     // check the email of user
-    .then(async (user) => {
+    .then((user) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
       } else {
@@ -233,13 +252,13 @@ exports.updateUser = (req, res, next) => {
         //in case email modification
         if (update.email) {
           update.email = encrypt(update.email);
-        }
+        };
 
         ///in case password modification
         if (update.password) {
-          const hash = await bcrypt.hash(update.password, 10);
+          const hash = bcrypt.hash(update.password, 10);
           update.password = hash;
-        }
+        };
 
         //In case img file modification
         const userObject = req.file
@@ -268,7 +287,9 @@ exports.updateUser = (req, res, next) => {
           .then((updatedUser) => {
             //decrypt email to be returned
             updatedUser.email = decrypt(updatedUser.email);
-            res.status(200).json(updatedUser);
+            res
+              .status(200)
+              .json(hateoasLinks(req, updatedUser, updatedUser._id));
           })
           .catch((error) => console.log(error));
       }
@@ -299,4 +320,60 @@ exports.deleteUser = (req, res, next) => {
     .catch((error) => {
       res.status(500).json({ error });
     });
+};
+
+//hateoas links
+const hateoasLinks = (req, user, id) => {
+  const hateoas = [
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/signup"}`,
+      rel: "signup",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/login"}`,
+      rel: "login",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/refresh"}`,
+      rel: "refresh",
+      type: "POST",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/logout"}`,
+      rel: "logout",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/" + id}`,
+      rel: "readOneUser",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/"}`,
+      rel: "readUserInfo",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/export"}`,
+      rel: "export",
+      type: "GET",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/"}`,
+      rel: "update",
+      type: "PUT",
+    },
+    {
+      href: `${req.protocol}://${req.get("host") + "/api/auth/"}`,
+      rel: "delete",
+      type: "DELETE",
+    },
+  ];
+
+  return {
+    ...user.toObject(),
+    links: hateoas,
+  };
 };
