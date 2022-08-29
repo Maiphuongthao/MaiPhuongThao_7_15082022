@@ -20,7 +20,7 @@ const userSchema = mongoose.Schema(
     },
     password: { type: String, required: true },
     isAdmin: { type: Boolean, required: true, default: false },
-    imageUrl: { type: String, default: "/images/default_avatar.png" },
+    imageUrl: { type: String, default: "/images/default.png" },
     followers: [{ type: String, ref: "User"}],
     following: [{ type: String, ref: "User"}],
   },

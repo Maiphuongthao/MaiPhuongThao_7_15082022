@@ -240,22 +240,24 @@ exports.exportData = (req, res, next) => {
 };
 
 //////////////////////UPDATE USER PRODILE////////////////
-exports.updateUser = (req, res, next) => {
+exports.updateUser = (req, res, next) => {console.log('user'+user);
   User.findById(req.auth.userId)
     // check the email of user
     .then((user) => {
+      
       if (!user) {
         res.status(401).json({ message: "user not found" });
-      } else {
-        const update = req.file ? JSON.parse(req.body.user) : req.body;
+      } else { 
+        const update = {};
 
         //in case email modification
-        if (update.email) {
+        if (req.body.email) {
           update.email = encrypt(update.email);
         };
+       
 
         ///in case password modification
-        if (update.password) {
+        if (req.body.password) {
           const hash = bcrypt.hash(update.password, 10);
           update.password = hash;
         };
@@ -299,10 +301,10 @@ exports.updateUser = (req, res, next) => {
 
 /////////////////DELETE USER/////////////////////////
 exports.deleteUser = (req, res, next) => {
-  User.findById(req.params.id)
+  User.findById(req.auth.userd)
     .then((user) => {
       if (!user) {
-        res.status(403).json({ message: "User isn't found" });
+        res.status(403).json({ message: "User not found" });
       } else {
         const filename = user.imageUrl.split("/images/")[1];
         fs.unlink(`images/${filename}`, () => {
