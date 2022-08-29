@@ -102,10 +102,10 @@ exports.login = (req, res, next) => {
           );
           const userSend = hateoasLinks(req, user, user._id);
 
-          res.cookie('jwt', refreshToken, {
-            httpOnly: true,//accessible only by web server
+          res.cookie("jwt", refreshToken, {
+            httpOnly: true, //accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
-            sameSite: "None",//cross-site cookie
+            sameSite: "None", //cross-site cookie
             //secure: true,
             maxAge: 1000 * 60 * 60 * 24,
           });
@@ -131,10 +131,9 @@ exports.login = (req, res, next) => {
 //whenever a token expires or user refresh, a new access token can be created
 
 exports.refresh = (req, res, next) => {
- 
   const cookies = req.cookies;
 
-console.log(req.cookies);
+  console.log(req.cookies);
 
   if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
 
@@ -208,16 +207,15 @@ exports.readUserInfo = (req, res, next) => {
 exports.readOneUser = (req, res, next) => {
   debugger;
   // Check the user login if it's existe
-  User.findOne({_id:req.params.id})
+  User.findOne({ _id: req.params.id })
+    .select("-password -email")
     .then((user) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
       } else {
-        const userFound = {
-          username: user.username,
-          imageUrl: `${req.protocol}://${req.get("host")}${user.imageUrl}`,
-        }
-        res.status(200).json(hateoasLinks(req, userFound, userFound._id));
+        user.imageUrl = `${req.protocol}://${req.get("host")}${
+            user.imageUrl}`;
+        res.status(200).json(hateoasLinks(res, user, user._id));
       }
     })
     .catch((error) => res.status(500).json(error));
@@ -245,7 +243,7 @@ exports.exportData = (req, res, next) => {
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
     // check the email of user
-    .then(async (user) => {
+    .then((user) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
       } else {
@@ -254,13 +252,13 @@ exports.updateUser = (req, res, next) => {
         //in case email modification
         if (update.email) {
           update.email = encrypt(update.email);
-        }
+        };
 
         ///in case password modification
         if (update.password) {
-          const hash = await bcrypt.hash(update.password, 10);
+          const hash = bcrypt.hash(update.password, 10);
           update.password = hash;
-        }
+        };
 
         //In case img file modification
         const userObject = req.file
