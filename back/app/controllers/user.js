@@ -8,6 +8,7 @@ require("dotenv").config();
 const fs = require("fs");
 const { signUpErrors, logInErrors } = require("../errors/errors");
 const user = require("../models/user");
+const passwordSchema = require("../middleware/password");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
@@ -205,7 +206,6 @@ exports.readUserInfo = (req, res, next) => {
 ////////////////// READ ONE USER /////////////////////////
 
 exports.readOneUser = (req, res, next) => {
-  debugger;
   // Check the user login if it's existe
   User.findOne({ _id: req.params.id })
     .select("-password -email")
@@ -213,8 +213,7 @@ exports.readOneUser = (req, res, next) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
       } else {
-        user.imageUrl = `${req.protocol}://${req.get("host")}${
-            user.imageUrl}`;
+        user.imageUrl = `${req.protocol}://${req.get("host")}${user.imageUrl}`;
         res.status(200).json(hateoasLinks(res, user, user._id));
       }
     })
@@ -240,61 +239,56 @@ exports.exportData = (req, res, next) => {
 };
 
 //////////////////////UPDATE USER PRODILE////////////////
-exports.updateUser = (req, res, next) => {console.log('user'+user);
+exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
     // check the email of user
     .then((user) => {
-      
       if (!user) {
         res.status(401).json({ message: "user not found" });
-      } else { 
-        const update = {};
-
-        //in case email modification
-        if (req.body.email) {
-          update.email = encrypt(update.email);
-        };
-       
-
-        ///in case password modification
-        if (req.body.password) {
-          const hash = bcrypt.hash(update.password, 10);
-          update.password = hash;
-        };
-
-        //In case img file modification
-        const userObject = req.file
-          ? {
-              ...JSON.parse(req.body.user),
-              imageUrl: `/images/${req.file.filename}`,
-            }
-          : {
-              ...req.body,
-            };
-        const filename = user.imageUrl.split("/images/")[1];
-        try {
-          if (userObject.imageUrl) {
-            fs.unlinkSync(`images/${filename}`);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-
-        // update user data with new info, email need to be encrypted before adding to database
-        User.findOneAndUpdate({ _id: req.auth.userId }, ...userObject, {
-          new: true,
-          setDefaultsOnInsert: true,
-          upsert: true,
-        })
-          .then((updatedUser) => {
-            //decrypt email to be returned
-            updatedUser.email = decrypt(updatedUser.email);
-            res
-              .status(200)
-              .json(hateoasLinks(req, updatedUser, updatedUser._id));
-          })
-          .catch((error) => console.log(error));
       }
+
+      const update = req.file ? JSON.parse(req.body.user) : req.body;
+      //in case email modification
+      if (update.email) {
+        update.email = encrypt(update.email);
+      }
+
+      ///in case password modification
+      if (update.password) {
+        const hash = bcrypt.hash(update.password, 10);
+        update.password = hash;
+      }
+
+      //In case img file modification
+      const userObject = req.file
+        ? {
+            ...update,
+            imageUrl: `/images/${req.file.filename}`,
+          }
+        : {
+            ...update,
+          };
+      const filename = user.imageUrl.split("/images/")[1];
+      try {
+        if (userObject.imageUrl) {
+          fs.unlinkSync(`images/${filename}`);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      // update user data with new info, email need to be encrypted before adding to database
+      User.findOneAndUpdate({ _id: req.auth.userId }, ...userObject, {
+        new: true,
+        setDefaultsOnInsert: true,
+        upsert: true,
+      })
+        .then((updatedUser) => {
+          //decrypt email to be returned
+          updatedUser.email = decrypt(updatedUser.email);
+          res.status(200).json(hateoasLinks(req, updatedUser, updatedUser._id));
+        })
+        .catch((error) => console.log(error));
     })
     .catch((error) => res.status(500).json(error));
 };
