@@ -134,8 +134,6 @@ exports.login = (req, res, next) => {
 exports.refresh = (req, res, next) => {
   const cookies = req.cookies;
 
-  console.log(req.cookies);
-
   if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
 
   //destructuring refreshtoken from cookie
@@ -241,56 +239,64 @@ exports.exportData = (req, res, next) => {
 //////////////////////UPDATE USER PRODILE////////////////
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
-    // check the email of user
     .then((user) => {
       if (!user) {
-        res.status(401).json({ message: "user not found" });
-      }
-
-      const update = req.file ? JSON.parse(req.body.user) : req.body;
-      //in case email modification
-      if (update.email) {
-        update.email = encrypt(update.email);
-      }
-
-      ///in case password modification
-      if (update.password) {
-        const hash = bcrypt.hash(update.password, 10);
-        update.password = hash;
-      }
-
-      //In case img file modification
-      const userObject = req.file
-        ? {
-            ...update,
-            imageUrl: `/images/${req.file.filename}`,
-          }
-        : {
-            ...update,
-          };
-      const filename = user.imageUrl.split("/images/")[1];
-      try {
-        if (userObject.imageUrl) {
-          fs.unlinkSync(`images/${filename}`);
+        res.status(401).json(error);
+      } else {
+        const update = req.file ? JSON.parse(req.body.user) : req.body;
+        // if email updated
+        if (update.email) {
+          update.email = encryptMail(update.email); // the email is crypted
         }
-      } catch (error) {
-        console.error(error);
-      }
 
-      // update user data with new info, email need to be encrypted before adding to database
-      User.findOneAndUpdate({ _id: req.auth.userId }, ...userObject, {
-        new: true,
-        setDefaultsOnInsert: true,
-        upsert: true,
-      })
-        .then((updatedUser) => {
-          //decrypt email to be returned
-          updatedUser.email = decrypt(updatedUser.email);
-          res.status(200).json(hateoasLinks(req, updatedUser, updatedUser._id));
-        })
-        .catch((error) => console.log(error));
+        // if password updated
+        if (update.password) {
+          const hash = bcrypt.hash(update.password, 10);
+          update.password = hash;
+        }
+
+        // check if image file is present
+        const userObject = req.file
+          ? {
+              ...update,
+              imageUrl: `/images/${req.file.filename}`,
+            }
+          : {
+              ...update,
+            };
+
+        const filename = user.imageUrl.split("/images/")[1];
+
+        try {
+          if (userObject.imageUrl) {
+            fs.unlinkSync(`images/${filename}`);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+
+        User.findByIdAndUpdate(
+          {
+            _id: req.auth.userId,
+          },
+          userObject,
+          {
+            new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
+          }
+        )
+          .then((updatedUser) => {
+            res
+              .status(200)
+              .json(hateoasLinks(req, updatedUser, updatedUser._id));
+          })
+          .catch((error) => {
+            res.status(400).json(error);
+          });
+      }
     })
-    .catch((error) => res.status(500).json(error));
+    .catch((error) => res.status(400).json(error));
 };
 
 /////////////////DELETE USER/////////////////////////
