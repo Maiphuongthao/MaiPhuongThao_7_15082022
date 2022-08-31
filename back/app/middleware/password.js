@@ -13,7 +13,7 @@ schema
 .has().not().spaces()                           // Should not have spaces
 .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
 
-module.exports = (req, res, next)=>{
+module.exports = (req, res, next)=>{ 
     if (!schema.validate(req.body.password)) {
         return res.status(403).json({
           error:
@@ -21,6 +21,6 @@ module.exports = (req, res, next)=>{
         });
       } else {
         next();
-      }
-    
+      };
+     
 }

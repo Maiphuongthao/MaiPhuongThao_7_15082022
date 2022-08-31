@@ -5,7 +5,6 @@ const userRoutes = require('./user');
 const postRoutes = require('./post');
 const commentRoutes = require('./comment');
 
-
 //path for routes
 router.use('/auth', userRoutes);
 router.use('/post', postRoutes);

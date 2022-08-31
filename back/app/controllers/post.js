@@ -11,7 +11,19 @@ exports.readOnePost = (req, res, next) => {
     .then((post) => {
       if (req.body.imageUrl) {
         post.imageUrl = `${req.protocol}://${req.get("host")}${post.imageUrl}`;
-      }
+      };
+      if(req.body.comments){
+        Comment.find({ postId: req.body.postId })
+        .then(() => {
+          res.status(200).json();
+        })
+        .catch((error) =>
+          res.status(400).json({
+            error: error,
+          })
+        );
+      };
+      
       res.status(200).json(hateoasLinks(req, post, post._id));
     })
     .catch((error) =>
@@ -25,6 +37,7 @@ exports.readOnePost = (req, res, next) => {
 
 exports.readAllPosts = (req, res, next) => {
   Post.find()
+    .sort({ createdAt: -1 })
     .then((posts) => {
       posts = posts.map((post) => {
         post.imageUrl = `${req.protocol}://${req.get("host")}${post.imageUrl}`;
@@ -49,7 +62,7 @@ exports.createPost = (req, res, next) => {
   const post = new Post({
     ...postObject,
     userId: req.auth.userId,
-    imageUrl: req.file ? `/images/${req.file.filename}` : "",
+    imageUrl: req.file ? `/images/${req.file.filename}` : " ",
   });
 
   post
@@ -66,16 +79,17 @@ exports.createPost = (req, res, next) => {
 exports.likePost = (req, res, next) => {
   //find post id
   Post.findOne({ _id: req.params.id })
-    .then((postFound) => {
-      const userLikedPost = postFound.usersLiked.includes(req.auth.userId);
+    .then((post) => {
+      const userLikedPost = post.usersLiked.includes(req.auth.userId);
       let likeStatement = {};
       //Case like = 1/////////////////////////
-      switch (req.body.like) {
+      switch (req.body.likes) {
         case 1:
           likeStatement = {
             $inc: { likes: 1 },
             $push: { usersLiked: req.auth.userId },
           };
+
           if (!userLikedPost) {
             Post.findByIdAndUpdate({ _id: req.params.id }, likeStatement, {
               new: true,
@@ -83,7 +97,9 @@ exports.likePost = (req, res, next) => {
               upsert: true,
             })
               .then((postUpdated) => {
-                res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id));
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, postUpdated, postUpdated._id));
               })
               .catch((error) => res.status(400).json({ error }));
           } else {
@@ -92,19 +108,20 @@ exports.likePost = (req, res, next) => {
           break;
         //Case like = 0
         case 0:
+          likeStatement = {
+            $inc: { likes: -1 },
+            $pull: { usersLiked: req.auth.userId },
+          };
           if (userLikedPost) {
-            Post.findByIdAndUpdate(
-              { _id: req.params.id },
-              {
-                $pull: {
-                  usersLiked: req.auth.userId,
-                },
-                $inc: { like: -1 },
-              },
-              { new: true, setDefaultsOnInsert: true, upsert: true }
-            )
+            Post.findByIdAndUpdate({ _id: req.params.id }, likeStatement, {
+              new: true,
+              setDefaultsOnInsert: true,
+              upsert: true,
+            })
               .then((postUpdated) => {
-                res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id));
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, postUpdated, postUpdated._id));
               })
               .catch((error) => res.status(400).json({ error }));
           } else {
@@ -184,7 +201,6 @@ exports.deletePost = (req, res, next) => {
       res.status(500).json({ error });
     });
 };
-
 
 const hateoasLinks = (req, post, id) => {
   const hateoas = [

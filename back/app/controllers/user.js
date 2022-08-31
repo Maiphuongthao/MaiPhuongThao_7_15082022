@@ -8,6 +8,7 @@ require("dotenv").config();
 const fs = require("fs");
 const { signUpErrors, logInErrors } = require("../errors/errors");
 const user = require("../models/user");
+const passwordSchema = require("../middleware/password");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
@@ -89,7 +90,7 @@ exports.login = (req, res, next) => {
             { userId: user._id },
             //random token dispo pendant 24h
             process.env.TOKEN_SECRET,
-            { expiresIn: "15m" }
+            { expiresIn: "12h" }
           );
 
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired
@@ -132,8 +133,6 @@ exports.login = (req, res, next) => {
 
 exports.refresh = (req, res, next) => {
   const cookies = req.cookies;
-
-  console.log(req.cookies);
 
   if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
 
@@ -205,7 +204,6 @@ exports.readUserInfo = (req, res, next) => {
 ////////////////// READ ONE USER /////////////////////////
 
 exports.readOneUser = (req, res, next) => {
-  debugger;
   // Check the user login if it's existe
   User.findOne({ _id: req.params.id })
     .select("-password -email")
@@ -213,8 +211,7 @@ exports.readOneUser = (req, res, next) => {
       if (!user) {
         res.status(401).json({ message: "user not found" });
       } else {
-        user.imageUrl = `${req.protocol}://${req.get("host")}${
-            user.imageUrl}`;
+        user.imageUrl = `${req.protocol}://${req.get("host")}${user.imageUrl}`;
         res.status(200).json(hateoasLinks(res, user, user._id));
       }
     })
@@ -242,56 +239,61 @@ exports.exportData = (req, res, next) => {
 //////////////////////UPDATE USER PRODILE////////////////
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
-    // check the email of user
     .then((user) => {
       if (!user) {
-        res.status(401).json({ message: "user not found" });
+        res.status(401).json(error);
       } else {
         const update = req.file ? JSON.parse(req.body.user) : req.body;
-
-        //in case email modification
+        // if email updated
         if (update.email) {
-          update.email = encrypt(update.email);
-        };
+          update.email = encryptMail(update.email); // the email is crypted
+        }
 
-        ///in case password modification
+        // if password updated
         if (update.password) {
           const hash = bcrypt.hash(update.password, 10);
           update.password = hash;
-        };
+        }
 
-        //In case img file modification
+        // check if image file is present
         const userObject = req.file
           ? {
-              ...JSON.parse(req.body.user),
+              ...update,
               imageUrl: `/images/${req.file.filename}`,
             }
           : {
-              ...req.body,
+              ...update,
             };
+
         const filename = user.imageUrl.split("/images/")[1];
+
         try {
           if (userObject.imageUrl) {
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
-          console.error(error);
+          console.log(error);
         }
 
-        // update user data with new info, email need to be encrypted before adding to database
-        User.findOneAndUpdate({ _id: req.auth.userId }, ...userObject, {
-          new: true,
-          setDefaultsOnInsert: true,
-          upsert: true,
-        })
+        User.findByIdAndUpdate(
+          {
+            _id: req.auth.userId,
+          },
+          userObject,
+          {
+            new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
+          }
+        )
           .then((updatedUser) => {
-            //decrypt email to be returned
-            updatedUser.email = decrypt(updatedUser.email);
             res
               .status(200)
               .json(hateoasLinks(req, updatedUser, updatedUser._id));
           })
-          .catch((error) => console.log(error));
+          .catch((error) => {
+            res.status(400).json(error);
+          });
       }
     })
     .catch((error) => res.status(500).json(error));
@@ -299,10 +301,10 @@ exports.updateUser = (req, res, next) => {
 
 /////////////////DELETE USER/////////////////////////
 exports.deleteUser = (req, res, next) => {
-  User.findById(req.params.id)
+  User.findById(req.auth.userd)
     .then((user) => {
       if (!user) {
-        res.status(403).json({ message: "User isn't found" });
+        res.status(403).json({ message: "User not found" });
       } else {
         const filename = user.imageUrl.split("/images/")[1];
         fs.unlink(`images/${filename}`, () => {
