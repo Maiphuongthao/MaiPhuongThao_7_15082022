@@ -89,7 +89,7 @@ exports.login = (req, res, next) => {
             { userId: user._id },
             //random token dispo pendant 24h
             process.env.TOKEN_SECRET,
-            { expiresIn: "15m" }
+            { expiresIn: "12h" }
           );
 
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired

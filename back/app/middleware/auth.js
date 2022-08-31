@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 // verify if user is connected to transfert connection infos to differents methods
-
 module.exports = (req, res, next) => {
   try {
     //get header and split it after space which is 2nd
