@@ -1,22 +1,17 @@
+<script setup>
+import { RouterLink, RouterView } from "vue-router";
+import HeaderLoginPage from "./components/HeaderLoginPage.vue";
+</script>
+
 <template>
-  <div>
-    <Header/>
-  </div>
+ <HeaderLoginPage/>
+
+  <RouterView />
 </template>
 
-
-<script>
-
-
-export default {
-  name:'App',
-  components:{
-    Header,
-    Footer,
-  }
-}
-
-</script>
 <style>
+#app{
+  font-family: 'Lato', sans-serif;
+}
 
 </style>
