@@ -1,6 +1,10 @@
-import { STRING_UNARY_OPERATORS } from "@babel/types";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter} from "vue-router";
 import Home from "../views/Home.vue";
+import Login from "../views/Login.vue";
+import Signup from "../views/Signup.vue";
+import User from "../views/User.vue";
+import UpdateUser from "../views/UpdateUser.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,14 +25,14 @@ const router = createRouter({
       component: Signup,
     },
     {
-      path: "/profile",
-      name: "Profile",
-      component: Profile,
+      path: "/user",
+      name: "User",
+      component: User,
     },
     {
-      path: "/updateProfile",
-      name: "UpdateProfile",
-      component: UpdateProfile,
+      path: "/updateUser",
+      name: "UpdateUser",
+      component: UpdateUser,
     },
   ],
 });

@@ -1,6 +1,4 @@
 <script setup>
-import Home from "../views/Home.vue";
-
 defineProps({
   msg: {
     type: String,
@@ -9,29 +7,35 @@ defineProps({
 </script>
 
 <template>
+
   <div class="container">
     <header
       class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-2 border-bottom brand-text"
     >
-      <a
-        href="/"
-        class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-danger text-decoration-none"
-      >
-        Groupomania
-      </a>
+      <router-link class="navbar-brand" to="/">
+        <img
+          class="w-50"
+          src="../assets/logo/icon-left-font-monochrome-black.svg"
+          alt="Logo Groupomania"
+        />
+      </router-link>
 
       <div
         class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0 text-end"
       >
-        <button type="button" class="btn btn-outline-primary me-2">
-          Login
-        </button>
-        <button type="button" class="btn btn-color">Sign-up</button>
+        <router-link to="/login">
+          <button type="button" class="btn btn-outline-primary me-2">
+            Login
+          </button></router-link
+        >
+        <router-link to="/signup">
+          <button type="button" class="btn btn-color">
+            Sign-up
+          </button></router-link
+        >
       </div>
     </header>
   </div>
-
-  <Home/>
 </template>
 
 <style>

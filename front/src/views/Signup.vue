@@ -1,4 +1,6 @@
 <script setup>
+import axios from "axios";
+
 defineProps({
   msg: {
     type: String,
@@ -19,7 +21,7 @@ defineProps({
             </div>
             <div class="card-body p-4 p-sm-5">
               <h5 class="card-title text-center mb-5 fw-regular fs-5">
-                Inscription
+                Connexion
               </h5>
               <form>
                 <div class="form-floating mb-3">
@@ -28,6 +30,7 @@ defineProps({
                     class="form-control"
                     id="floatingInputUsername"
                     placeholder="myusername"
+                    v-model="user.username"
                     required
                     autofocus
                   />
@@ -40,6 +43,7 @@ defineProps({
                     class="form-control"
                     id="floatingInputEmail"
                     placeholder="name@example.com"
+                    v-model="user.email"
                   />
                   <label for="floatingInputEmail">Email address</label>
                 </div>
@@ -52,16 +56,17 @@ defineProps({
                     class="form-control"
                     id="floatingPassword"
                     placeholder="Password"
+                    v-model="user.password"
                   />
                   <label for="floatingPassword">Password</label>
                 </div>
 
                 <div class="d-grid mb-2">
                   <button
-                    class="btn btn-color btn-md btn-login fw-bold text-uppercase"
+                    class="btn btn-md btn-color btn-signup fw-bold text-uppercase"
                     type="submit"
                   >
-                    Inscription
+                    Connexion
                   </button>
                 </div>
               </form>
@@ -72,4 +77,3 @@ defineProps({
     </div>
   </body>
 </template>
-

@@ -1,11 +1,20 @@
-<script setup>
-import Login from "../components/Login.vue";
-import Signup from "../components/Signup.vue";
+<script >
+import HeaderHomePage from "../components/HeaderHomePage.vue";
+import CreatePost from "../components/CreatePost.vue";
+import Post from "../components/Post.vue";
+export default {
+  name: "App",
+  components: {
+    HeaderHomePage,
+    CreatePost,
+    Post,
+  }
+};
 </script>
 
 <template>
-  <main>
-    <Login />
-      <Signup />
-  </main>
+  <HeaderHomePage />
+  <CreatePost />
+  <Post />
 </template>
+<style></style>
