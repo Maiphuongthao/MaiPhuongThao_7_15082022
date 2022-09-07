@@ -6,6 +6,7 @@ defineProps({
     type: String,
   },
   method:{
+    
   },
 });
 </script>
