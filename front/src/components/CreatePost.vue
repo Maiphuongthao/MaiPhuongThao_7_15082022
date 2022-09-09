@@ -4,7 +4,7 @@
       <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
         <li class="nav-item">
           <a
-            class="nav-link active"
+            class="nav-link active fw-bold"
             id="posts-tab"
             data-toggle="tab"
             href="#posts"
@@ -12,18 +12,6 @@
             aria-controls="posts"
             aria-selected="true"
             >Créer un post</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            id="images-tab"
-            data-toggle="tab"
-            role="tab"
-            aria-controls="images"
-            aria-selected="false"
-            href="#images"
-            >Images</a
           >
         </li>
       </ul>
@@ -64,9 +52,13 @@
         </div>
       </div>
       <div class="btn-toolbar justify-content-between">
-        <div class="btn-group">
-          <button type="submit" class="btn btn-primary">
+        <div class="btn-group mt-2">
+          <button type="submit" class="btn btn-color">
             <i class="far fa-paper-plane"></i>
+          </button>
+          <button type="file" class="btn btn-color mx-3">
+            <label for="formFile"><i class="fas fa-images"></i></label>
+            <input type="file" class="form-control" id="formFile" hidden />
           </button>
         </div>
         <div class="btn-group"></div>
@@ -74,7 +66,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 export default {};

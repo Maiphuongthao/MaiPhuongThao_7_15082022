@@ -1,20 +1,24 @@
-<script >
-import HeaderHomePage from "../components/HeaderHomePage.vue";
+<template>
+  <CreatePost />
+  <Post />
+</template>
+
+<script>
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
 export default {
   name: "App",
   components: {
-    HeaderHomePage,
     CreatePost,
     Post,
+  },
+  data(){
+    return{
+      post:{
+        id:""
+      }
+    }
   }
 };
 </script>
-
-<template>
-  <HeaderHomePage />
-  <CreatePost />
-  <Post />
-</template>
 <style></style>

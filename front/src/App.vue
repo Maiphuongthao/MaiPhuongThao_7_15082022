@@ -1,25 +1,28 @@
-<script>
-import HeaderOne from "./components/HeaderOne.vue";
-export default {
-  name: "App",
-  components: {
-    HeaderOne,
-  },
-};
-</script>
-
 <template>
-  <HeaderOne />
   <router-view></router-view>
 </template>
 
+<script setup>
+defineProps({
+});
+</script>
+
 <style>
 #app {
-  font-family: "Lato", sans-serif;
+  font-family: Lato, "Open sans", sans-serif;
   color: #4e5166;
-  text-align: center;
 }
 .btn-color {
   background-color: #ffd7d7;
+}
+img {
+  object-fit: cover;
+}
+a {
+  text-decoration: none;
+  color: #4e5166;
+}
+.icon:hover {
+  color: #ffd7d7;
 }
 </style>
