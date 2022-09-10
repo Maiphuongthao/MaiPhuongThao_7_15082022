@@ -164,7 +164,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import router from "../router";
-var fileDownload = require("js-file-download");
 
 export default {
   name: "User",
