@@ -6,7 +6,7 @@
           <img
             class="rounded-circle mt-5"
             width="150px"
-            src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg"
+            src="../assets/default.png"
           /><span class="font-weight-bold">Bentims</span
           ><span class="text-black-50">example@example.com</span>
         </div>
@@ -16,23 +16,22 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-right">Modifier vos informations</h4>
           </div>
+
           <div class="row mt-3">
             <div class="input-group mb-3">
               <div class="input-group-prepend">
                 <span class="input-group-text" id="inputGroupFileAddon01"
-                  ><i class="fas fa-images"></i
+                  ><i class="fas fa-images fa-lg p-1"></i
                 ></span>
               </div>
               <div class="custom-file">
                 <input
                   type="file"
-                  class="custom-file-input"
+                  class="custom-file-input form-control"
                   id="inputGroupFile01"
-                  aria-describedby="inputGroupFileAddon01"
+                  aria-describedby="inputGroupFileAddon02"
                 />
-                <label class="custom-file-label" for="inputGroupFile01"
-                  >Choisir votre nouvelle image</label
-                >
+                <label class="custom-file-label" for="inputGroupFile01"></label>
               </div>
             </div>
             <div class="input-group mb-3">
@@ -69,7 +68,7 @@
             </div>
           </div>
 
-          <div class="mt-5 text-center">
+          <div class="mt-4 text-center">
             <button class="btn btn-primary profile-button" type="button">
               Enregistrer
             </button>

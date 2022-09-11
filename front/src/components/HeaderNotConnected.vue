@@ -1,18 +1,9 @@
-<script setup>
-defineProps({
-  msg: {
-    type: String,
-  },
-});
-</script>
-
 <template>
-
   <div class="container">
     <header
       class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-2 border-bottom brand-text"
     >
-      <router-link class="navbar-brand" to="/">
+      <router-link class="navbar-brand" to="/public">
         <img
           class="w-50"
           src="../assets/logo/icon-left-font-monochrome-black.svg"
@@ -37,6 +28,14 @@ defineProps({
     </header>
   </div>
 </template>
+
+<script setup>
+defineProps({
+  msg: {
+    type: String,
+  },
+});
+</script>
 
 <style>
 .brand-text {

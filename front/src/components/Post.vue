@@ -4,37 +4,35 @@
       <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex justify-content-between align-items-center">
           <div class="mr-2">
-            <img
-              class="rounded-circle"
-              width="45"
-              src="https://picsum.photos/50/50"
-              alt=""
-            />
+            <router-link to="/user">
+              <img
+                class="rounded-circle"
+                width="45"
+                src="../assets/default.png"
+                alt=""
+            /></router-link>
           </div>
           <div class="ml-2">
-            <div class="h5 m-0">@LeeCross</div>
+            <router-link to="/user">
+              <div class="h6 m-0">@LeeCross</div></router-link
+            >
             <div class="h7 text-muted">Miracles Lee Cross</div>
           </div>
         </div>
-        <div>
-          <div class="dropdown">
-            <button
-              class="btn btn-link dropdown-toggle"
-              type="button"
-              id="gedf-drop1"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
+
+        <div class="d-flex flex-row gap-3 align-items-center">
+          <div class="d-flex align-items-center">
+            <a href="">
+              <i class="fas fa-pen"></i>
+              <span class="ms-1 fs-10">Modifier</span></a
             >
-              <i class="fa fa-ellipsis-h"></i>
-            </button>
-            <div
-              class="dropdown-menu dropdown-menu-right"
-              aria-labelledby="gedf-drop1"
+          </div>
+
+          <div class="d-flex align-items-center">
+            <a href="">
+              <i class="fas fa-trash-alt"></i>
+              <span class="ms-1 fs-10">Supprimer</span></a
             >
-              <a class="dropdown-item" href="#">Modifier</a>
-              <a class="dropdown-item" href="#">Supprimer</a>
-            </div>
           </div>
         </div>
       </div>
@@ -44,9 +42,9 @@
         <i class="fa fa-clock-o"></i>10 min ago
       </div>
       <a class="card-link" href="#">
-        <h5 class="card-title">
+        <h6 class="card-title">
           Lorem ipsum dolor sit amet, consectetur adip.
-        </h5>
+        </h6>
       </a>
 
       <p class="card-text">
@@ -55,23 +53,22 @@
         quaerat cum, obcaecati hic, molestias minima iste voluptates.
       </p>
     </div>
-    <div class="card-footer">
-      <a href="#" class="card-link"><i class="fa fa-gittip"></i>J'aime</a>
-      <a href="#" class="card-link"><i class="fa fa-comment"></i> Commenter</a>
-    </div>
+    <ul class="nav d-flex justify-content-start mb-4">
+      <li class="nav-item mx-3">
+        <a class="icon" href="#"><i class="fa fa-gittip fa-lg"></i>J'aime</a>
+      </li>
+      <li class="nav-item">
+        <a class="icon" href="#"
+          ><i class="fa fa-comment fa-lg"></i> Commenter</a
+        >
+      </li>
+    </ul>
     <Comment />
   </div>
 </template>
 
-<script>
+<script setup>
 import Comment from "./Comment.vue";
-export default {
-  name: "Post",
-  components: {
-    Comment,
-  },
-  props:{
-    type: String,
-  }
-};
 </script>
+
+<style></style>

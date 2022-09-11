@@ -1,16 +1,5 @@
-<script setup>
-import axios from "axios";
-
-defineProps({
-  msg: {
-    type: String,
-  },
-  method:{
-  },
-});
-</script>
-
 <template>
+  <body>
     <div class="container">
       <div class="row">
         <div class="col-lg-10 col-xl-9 mx-auto">
@@ -22,60 +11,112 @@ defineProps({
             </div>
             <div class="card-body p-4 p-sm-5">
               <h5 class="card-title text-center mb-5 fw-regular fs-5">
-                Inscription
+                Connexion
               </h5>
-              <form>
+              <Form @submit="logIn" :validation-schema="schema">
                 <div class="form-floating mb-3">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="floatingInputUsername"
-                    placeholder="myusername"
-                    v-model="user.username"
-                    required
-                    autofocus
-                  />
-                  <label for="floatingInputUsername">Username</label>
-                </div>
-
-                <div class="form-floating mb-3">
-                  <input
+                  <Field
                     type="email"
                     class="form-control"
                     id="floatingInputEmail"
+                    name="floatingInputEmail"
                     placeholder="name@example.com"
                     v-model="user.email"
                   />
+                  <ErrorMessage name="floatingInputEmail" />
                   <label for="floatingInputEmail">Email address</label>
                 </div>
 
                 <hr />
 
                 <div class="form-floating mb-3">
-                  <input
+                  <Field
                     type="password"
                     class="form-control"
+                    name="floatingPassword"
                     id="floatingPassword"
                     placeholder="Password"
                     v-model="user.password"
                   />
+                  <ErrorMessage name="floatingPassword" />
                   <label for="floatingPassword">Password</label>
                 </div>
 
                 <div class="d-grid mb-2">
-                  <button @click.prevent = "logIn"
-                    class="btn btn-color btn-md btn-login fw-bold text-uppercase"
+                  <button
+                    class="btn btn-md btn-color btn-signup fw-bold text-uppercase"
                     type="submit"
                   >
-                    Inscription
+                    Connexion
                   </button>
                 </div>
-              </form>
+              </Form>
             </div>
           </div>
         </div>
       </div>
     </div>
-
+  </body>
 </template>
 
+<script>
+import axios from "axios";
+import { mapStores } from "pinia";
+import { Form, Field, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
+import router from "../router/index";
+import { useAuthStore } from "@/stores/authStore";
+
+export default {
+  components: {
+    Form,
+    Field,
+    ErrorMessage,
+  },
+  data() {
+    const schema = yup.object().shape({
+      floatingInputEmail: yup
+        .string()
+        .required("L'email est obligatoire")
+        .email("L'email n'est pas valide"),
+      floatingPassword: yup
+        .string()
+        .required("Le mot de passe est obligatoire"),
+    });
+    return {
+      schema,
+      user: {
+        email: "",
+        passworld: "",
+      },
+    };
+  },
+  computed: {
+    ...mapStores(useAuthStore),
+  },
+
+  methods: {
+    logIn() {
+      axios
+        .post("http://localhost:3000/api/auth/login", this.user, {
+          withCredentials: true,
+        })
+        .then((res) => {
+          if (!res.ok) {
+            router.push("/login");
+          } //interceps the token and place in header
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${res.data.token}`;
+
+          //store the data to be reused
+          const auth = useAuthStore();
+          auth.login(res.data.token, res.data.User);
+          //redirect to homepage
+          router.push("/");
+        })
+        .catch((error) => console.log(error));
+    },
+  },
+};
+</script>
