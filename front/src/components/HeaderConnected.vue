@@ -48,9 +48,9 @@ import axios from "axios";
 import router from "../router/index";
 import { useAuthStore } from "@/stores/authStore";
 
-const logout = async () => {
-  const res = await axios
-    .get(import.meta.env.VUE_APP_API_URL + "/auth/logout", {
+const logout = () => {
+  axios
+    .get("http://localhost:3000/api/auth/logout", {
       withCredentials: true,
     })
     .then(() => {
@@ -61,9 +61,9 @@ const logout = async () => {
       const auth = useAuthStore();
       auth.logOut();
       //redirect to login page
-      router.push("/login");
+      router.push("/public");
     })
-    .catch((error) => res.send(error));
+    .catch((error) => console.log(error));
 };
 
 defineProps({

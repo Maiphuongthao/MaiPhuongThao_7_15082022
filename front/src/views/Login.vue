@@ -13,7 +13,7 @@
               <h5 class="card-title text-center mb-5 fw-regular fs-5">
                 Connexion
               </h5>
-              <Form @submit.prevent="logIn" :validation-schema="schema">
+              <Form @submit="logIn" :validation-schema="schema">
                 <div class="form-floating mb-3">
                   <Field
                     type="email"
@@ -23,7 +23,7 @@
                     placeholder="name@example.com"
                     v-model="user.email"
                   />
-                  <ErrorMessage :name="floatingInputEmail" as="small" />
+                  <ErrorMessage name="floatingInputEmail" />
                   <label for="floatingInputEmail">Email address</label>
                 </div>
 
@@ -38,13 +38,12 @@
                     placeholder="Password"
                     v-model="user.password"
                   />
-                  <ErrorMessage :name="floatingPassword" as="small" />
+                  <ErrorMessage name="floatingPassword" />
                   <label for="floatingPassword">Password</label>
                 </div>
 
                 <div class="d-grid mb-2">
                   <button
-                    @click.prevent="logIn"
                     class="btn btn-md btn-color btn-signup fw-bold text-uppercase"
                     type="submit"
                   >
@@ -60,65 +59,54 @@
   </body>
 </template>
 
-<script>
+<script setup>
 import axios from "axios";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import router from "../router/index";
 import { useAuthStore } from "@/stores/authStore";
 
-export default {
-  data() {
-    const schema = yup.object().shape({
-      floatingInputEmail: yup
-        .string()
-        .required("L'email est obligatoire")
-        .email("L'email n'est pas valide"),
-      floatingPassword: yup
-        .string()
-        .required("Le mot de passe est obligatoire"),
-    });
-    return {
-      schema,
-      user: {
-        email: "",
-        password: "",
-      },
-    };
-  },
-  components: {
-    Form,
-    Field,
-    ErrorMessage,
-  },
-  methods: {
-    logIn() {
-      axios
-        .post(import.meta.env.VITE_APP_API_URL + "/user/login", this.user, {
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (!res.ok) {
-            router.push("/login");
-          } //interceps the token and place in header
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${res.data.token}`;
+const schema = yup.object().shape({
+  floatingInputEmail: yup
+    .string()
+    .required("L'email est obligatoire")
+    .email("L'email n'est pas valide"),
+  floatingPassword: yup.string().required("Le mot de passe est obligatoire"),
+});
 
-          //store the data to be reused
-          const auth = useAuthStore();
-          auth.logIn(res.data.token, res.data.User);
-          //redirect to homepage
-          router.push("/");
-          //display header isconnected
-          this.$emit("change", true);
-        })
-        .catch((error) => console.log(error));
-    },
+const user = {
+  email: "",
+  password: "",
+};
+
+defineProps({
+  msg: {
+    type: String,
   },
-  //set isNotconnect to true to show header on the login page
-  mounted() {
-    this.$emit("change", false);
+  user: {
+    type: Object,
   },
+});
+
+const logIn = () => {
+  axios
+    .post(import.meta.env.VITE_APP_API_URL + "/user/login", user, {
+      withCredentials: true,
+    })
+    .then((res) => {
+      if (!res.ok) {
+        router.push("/login");
+      } //interceps the token and place in header
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${res.data.token}`;
+
+      //store the data to be reused
+      const auth = useAuthStore();
+      auth.logIn(res.data.token, res.data.user);
+      //redirect to homepage
+      router.push("/");
+    })
+    .catch((error) => console.log(error));
 };
 </script>

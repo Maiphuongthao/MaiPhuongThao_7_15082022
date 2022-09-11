@@ -162,7 +162,6 @@
 
 <script>
 import axios from "axios";
-import { useAuthStore } from "@/stores/authStore";
 import router from "../router";
 
 export default {
@@ -189,9 +188,7 @@ export default {
     exportUser() {
       axios
         .get(import.meta.env.VITE_APP_API_URL + "/auth/export", this.user)
-        .then((res) => {
-          fileDownload(res, "userData.txt");
-        })
+        .then((res) => res)
         .catch((error) => console.log(error));
     },
   },

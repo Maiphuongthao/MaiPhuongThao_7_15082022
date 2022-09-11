@@ -27,7 +27,7 @@ let refresh = false;
 axios.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response.status === 403 && !refresh) {
+    if (error.response.status === 401 && !refresh) {
       refresh = true;
 
       const { status, data } = await axios.post(
@@ -47,6 +47,6 @@ axios.interceptors.response.use(
       }
     }
     refresh = false;
-    return error;
+    return Promise.reject(error);
   }
 );

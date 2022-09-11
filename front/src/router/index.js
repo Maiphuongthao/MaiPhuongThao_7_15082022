@@ -73,7 +73,7 @@ const mainRoutes = [
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.VITE_APP_BASE_URL),
-  routes: mainRoutes.concat(publicRoutes),
+  routes: publicRoutes.concat(mainRoutes),
 });
 
 export default router;
