@@ -33,11 +33,16 @@ authApi.interceptors.response.use(
       originalConfig._retry = true;
 
       try {
-        const authStore = useAuthStore();
-
         //refresh the token and retry once
-        const accessToken = await authStore.refreshToken();
-        originalConfig.headers.Authorization = "Bearer" + accessToken;
+        const refreshToken = await axios.post(
+          "http://localhost:3000/api/auth/refresh",
+          {},
+          { withCredentials: true }
+        );
+        const authStore = useAuthStore();
+        authStore.refreshToken(refreshToken);
+
+        originalConfig.headers.Authorization = "Bearer" + refreshToken;
 
         return authApi(originalConfig);
       } catch (_error) {

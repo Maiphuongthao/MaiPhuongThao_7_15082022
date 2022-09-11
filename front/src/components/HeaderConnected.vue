@@ -43,34 +43,36 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import axios from "axios";
 import router from "../router/index";
 import { useAuthStore } from "@/stores/authStore";
+import { mapStores } from "pinia";
 
-const logout = () => {
-  axios
-    .get("http://localhost:3000/api/auth/logout", {
-      withCredentials: true,
-    })
-    .then(() => {
-      //destroy token from headers
-      axios.defaults.headers.common["Authorization"] = "";
+export default {
+  methods: {
+    logout() {
+      axios
+        .get("http://localhost:3000/api/auth/logout", {
+          withCredentials: true,
+        })
+        .then(() => {
+          //destroy token from headers
+          axios.defaults.headers.common["Authorization"] = "";
 
-      //delete user from store
-      const auth = useAuthStore();
-      auth.logOut();
-      //redirect to login page
-      router.push("/public");
-    })
-    .catch((error) => console.log(error));
-};
-
-defineProps({
-  msg: {
-    type: String,
+          //delete user from store
+          const auth = useAuthStore();
+          auth.logOut();
+          //redirect to login page
+          router.push("/public");
+        })
+        .catch((error) => console.log(error));
+    },
   },
-});
+  computed: {
+    ...mapStores(useAuthStore),
+  },
+};
 </script>
 
 <style scoped>

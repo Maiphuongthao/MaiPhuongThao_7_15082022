@@ -163,22 +163,25 @@
 <script>
 import axios from "axios";
 import router from "../router";
+import { mapStores } from "pinia";
+import { useAuthStore } from "@/stores/authStore";
 
 export default {
-  name: "User",
   data() {
     return {
-      retourAPI: "",
       user: {
         username: null,
         userEmail: null,
       },
     };
   },
+  computed: {
+    ...mapStores(useAuthStore),
+  },
   methods: {
     deleteUser() {
       axios
-        .delete(import.meta.env.VITE_APP_API_URL + "/auth", this.user)
+        .delete("http://localhost:3000/api/auth", this.user)
         .then(() => {
           router.push("/signup");
         })
@@ -187,7 +190,7 @@ export default {
     //add fuction to export data
     exportUser() {
       axios
-        .get(import.meta.env.VITE_APP_API_URL + "/auth/export", this.user)
+        .get("http://localhost:3000/api/auth/export", this.user)
         .then((res) => res)
         .catch((error) => console.log(error));
     },
