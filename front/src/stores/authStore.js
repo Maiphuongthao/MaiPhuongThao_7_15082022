@@ -7,7 +7,7 @@ export const useAuthStore = defineStore({
     accessToken: null,
     refreshToken: null,
   }),
-
+  persist: true,
   //dynamique header dans app.vue
 
   actions: {

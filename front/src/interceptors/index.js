@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
 //set default config
-const BASE_URL = import.meta.env.VITE_APP_API_URL;
+const BASE_URL = "http://localhost:3000/api";
 
 const authApi = axios.create({
   baseURL: BASE_URL,
@@ -10,11 +10,14 @@ const authApi = axios.create({
 });
 
 // add automatically accesstoken from the store
-axios.interceptors.request.use(
-  (req) => {
+authApi.interceptors.request.use(
+  (config) => {
     const authStore = useAuthStore();
-    const accessToken = req;
-    return authStore.login(accessToken);
+    if (authStore.logIn()) {
+      config.headers.Authorization =
+        "Bearer" + authStore.getToken().accessToken;
+    }
+    return config;
   },
   (error) => {
     // Do something with request error
@@ -22,31 +25,26 @@ axios.interceptors.request.use(
   }
 );
 
-let refresh = false;
-
-axios.interceptors.response.use(
+authApi.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response.status === 401 && !refresh) {
-      refresh = true;
+    const originalConfig = error.config;
+    if (error.response?.status === 403 && !originalConfig._retry) {
+      originalConfig._retry = true;
 
-      const { status, data } = await axios.post(
-        "auth/refresh",
-        {},
-        {
-          withCredentials: true,
-        }
-      );
+      try {
+        const authStore = useAuthStore();
 
-      if (status === 200) {
-        authApi.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${data.token}`;
+        //refresh the token and retry once
+        const accessToken = await authStore.refreshToken();
+        originalConfig.headers.Authorization = "Bearer" + accessToken;
 
-        return axios(error.config);
+        return authApi(originalConfig);
+      } catch (_error) {
+        console.error("Refresh token failed");
+        return Promise.reject(error);
       }
     }
-    refresh = false;
     return Promise.reject(error);
   }
 );

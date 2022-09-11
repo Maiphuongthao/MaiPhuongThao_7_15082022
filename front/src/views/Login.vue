@@ -59,54 +59,64 @@
   </body>
 </template>
 
-<script setup>
+<script>
 import axios from "axios";
+import { mapStores } from "pinia";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import router from "../router/index";
 import { useAuthStore } from "@/stores/authStore";
 
-const schema = yup.object().shape({
-  floatingInputEmail: yup
-    .string()
-    .required("L'email est obligatoire")
-    .email("L'email n'est pas valide"),
-  floatingPassword: yup.string().required("Le mot de passe est obligatoire"),
-});
-
-const user = {
-  email: "",
-  password: "",
-};
-
-defineProps({
-  msg: {
-    type: String,
+export default {
+  components: {
+    Form,
+    Field,
+    ErrorMessage,
   },
-  user: {
-    type: Object,
+  data() {
+    const schema = yup.object().shape({
+      floatingInputEmail: yup
+        .string()
+        .required("L'email est obligatoire")
+        .email("L'email n'est pas valide"),
+      floatingPassword: yup
+        .string()
+        .required("Le mot de passe est obligatoire"),
+    });
+    return {
+      schema,
+      user: {
+        email: "",
+        passworld: "",
+      },
+    };
   },
-});
+  computed: {
+    ...mapStores(useAuthStore),
+  },
 
-const logIn = () => {
-  axios
-    .post(import.meta.env.VITE_APP_API_URL + "/user/login", user, {
-      withCredentials: true,
-    })
-    .then((res) => {
-      if (!res.ok) {
-        router.push("/login");
-      } //interceps the token and place in header
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${res.data.token}`;
+  methods: {
+    logIn() {
+      axios
+        .post("http://localhost:3000/api/auth/login", this.user, {
+          withCredentials: true,
+        })
+        .then((res) => {
+          if (!res.ok) {
+            router.push("/login");
+          } //interceps the token and place in header
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${res.data.token}`;
 
-      //store the data to be reused
-      const auth = useAuthStore();
-      auth.logIn(res.data.token, res.data.user);
-      //redirect to homepage
-      router.push("/");
-    })
-    .catch((error) => console.log(error));
+          //store the data to be reused
+          const auth = useAuthStore();
+          auth.login(res.data.token, res.data.User);
+          //redirect to homepage
+          router.push("/");
+        })
+        .catch((error) => console.log(error));
+    },
+  },
 };
 </script>

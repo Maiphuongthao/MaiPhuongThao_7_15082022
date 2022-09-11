@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-
+import { useAuthStore } from "@/stores/authStore";
 import Home from "../views/Home.vue";
 import Login from "../views/Login.vue";
 import Signup from "../views/Signup.vue";
@@ -8,7 +8,7 @@ import UpdateUser from "../views/UpdateUser.vue";
 import NotFound from "../views/NotFound.vue";
 import PublicLayout from "../layouts/PublicLayout.vue";
 import MainLayout from "../layouts/MainLayout.vue";
-import OtherUser from "../views/OtherUser.vue"
+import OtherUser from "../views/OtherUser.vue";
 
 const publicRoutes = [
   {
