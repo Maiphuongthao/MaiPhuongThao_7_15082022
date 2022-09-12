@@ -111,7 +111,7 @@ export default {
 
           //store the data to be reused
           const auth = useAuthStore();
-          auth.login(res.data.token, res.data.User);
+          auth.login(res.data);
           //redirect to homepage
           router.push("/");
         })

@@ -11,10 +11,11 @@ export const useAuthStore = defineStore({
   //dynamique header dans app.vue
 
   actions: {
-    login(accessToken, user) {
+    login(data) {
       // donner de login
-      this.user = user;
-      this.accessToken = accessToken;
+      this.user = data.user;
+      this.accessToken = data.accessToken;
+      this.refreshToken = data.refreshToken;
     },
     logOut() {
       this.user = null;
@@ -25,8 +26,10 @@ export const useAuthStore = defineStore({
     updateUser(user) {
       this.user = user;
     }, // comme login
-    refreshToken(refreshToken) {
+    refreshToken(refreshToken, accessToken) {
       this.refreshToken = refreshToken;
+      this.accessToken = accessToken;
+      
     }, // return seule le token
   },
 });
