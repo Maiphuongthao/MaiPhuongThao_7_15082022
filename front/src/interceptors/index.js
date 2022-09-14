@@ -1,22 +1,13 @@
-import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
+import authApi from "../services/api";
 
 const interceptors = () => {
-  //set default config
-  const BASE_URL = "http://localhost:3000/api";
-
-  const authApi = axios.create({
-    baseURL: BASE_URL,
-    withCredentials: true,
-  });
   // add automatically accesstoken from the store
   authApi.interceptors.request.use(
     (config) => {
       const authStore = useAuthStore();
-      console.log(authStore);
-      if (authStore.logIn()) {
-        config.headers.Authorization =
-          "Bearer" + authStore.getToken().accessToken;
+      if (authStore.accessToken) {
+        config.headers.Authorization = "Bearer " + authStore.accessToken;
       }
       return config;
     },
@@ -27,27 +18,32 @@ const interceptors = () => {
   );
 
   authApi.interceptors.response.use(
-    (res) => res,
+    (res) => {
+      return res;
+    },
     async (error) => {
       const originalConfig = error.config;
-      if (error.response?.status === 403 && !originalConfig._retry) {
-        originalConfig._retry = true;
+      if (originalConfig.url !== "/auth/login" && error.response) {
+        if (error.response.status === 403 && !originalConfig._retry) {
+          originalConfig._retry = true;
+          try {
+            const authStore = useAuthStore();
 
-        try {
-          //refresh the token and retry once
-          const refreshToken = await axios.post(
-            "http://localhost:3000/api/auth/refresh",
-            { withCredentials: true }
-          );
-          const authStore = useAuthStore();
-          authStore.refreshToken(refreshToken);
+            //refresh the token and retry once
+            const refresh = await authApi.post("/auth/refresh", {
+              refreshToken: authStore.refreshToken,
+            });
+            const { accessToken } = refresh.data;
 
-          originalConfig.headers.Authorization = "Bearer" + refreshToken;
+            authStore.returnRefreshToken(accessToken);
+            console.log("auth==" + authStore.refreshToken);
+            originalConfig.headers.Authorization = "Bearer " + accessToken;
 
-          return authApi(originalConfig);
-        } catch (_error) {
-          console.error("Refresh token failed");
-          return Promise.reject(error);
+            return authApi(originalConfig);
+          } catch (_error) {
+            console.error("Refresh token failed");
+            return Promise.reject(_error);
+          }
         }
       }
       return Promise.reject(error);

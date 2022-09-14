@@ -87,7 +87,7 @@ export default {
       schema,
       user: {
         email: "",
-        passworld: "",
+        password: "",
       },
     };
   },
@@ -104,14 +104,10 @@ export default {
         .then((res) => {
           if (!res.ok) {
             router.push("/login");
-          } //interceps the token and place in header
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${res.data.token}`;
-
+          }
           //store the data to be reused
           const auth = useAuthStore();
-          auth.login(res.data);
+          auth.loggingIn(res.data);
           //redirect to homepage
           router.push("/");
         })

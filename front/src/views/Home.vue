@@ -4,7 +4,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import authApi from "../services/api";
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
 export default {
@@ -14,7 +14,7 @@ export default {
     Post,
   },
   mounted() {
-    axios
+    authApi
       .get("http://localhost:3000/api/post")
       .then((res) => console.log(res))
       .catch((error) => console.log(error));
