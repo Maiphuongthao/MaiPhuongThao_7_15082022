@@ -84,7 +84,9 @@ router.beforeEach(async (to) => {
 
   if (authRequired && !auth.user) {
     auth.returnUrl = to.fullPath;
+    auth.logOut();
     return "/public";
+    
   }
 });
 

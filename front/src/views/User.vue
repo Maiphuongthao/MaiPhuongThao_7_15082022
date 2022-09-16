@@ -1,7 +1,8 @@
 <template>
   <User
-    :src="this.user.imageUrl"
-    :alt="this.user.imageUrl"
+  :class="this.user.userId"
+    :imageUrl="this.user.imageUrl"
+    :alt="this.user.username"
     :email="this.user.email"
     :isAdmin="this.user.isAdmin"
     :username="this.user.username"
@@ -27,8 +28,6 @@ export default {
       .get("/auth")
       .then((res) => {
         this.user = res.data;
-        console.log("user==="+ this.user.imageUrl)
-        console.log("data =====" + this.user);
       })
       .catch((error) => console.log(error));
   },

@@ -1,10 +1,13 @@
 <template>
-  <div class="card gedf-card">
+  <div class="card gedf-card" :id="postId">
     <div class="card-header">
       <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex justify-content-between align-items-center">
+        <div
+          class="d-flex justify-content-between align-items-center"
+          :id="userId"
+        >
           <div class="mr-2">
-            <router-link to="/user">
+            <router-link to="/otherUser">
               <img
                 class="rounded-circle"
                 width="45"
@@ -13,7 +16,7 @@
             /></router-link>
           </div>
           <div class="ml-2">
-            <router-link to="/user">
+            <router-link to="/otherUser">
               <div class="h6 m-0">@LeeCross</div></router-link
             >
             <div class="h7 text-muted">Miracles Lee Cross</div>
@@ -39,18 +42,14 @@
     </div>
     <div class="card-body">
       <div class="text-muted h7 mb-2">
-        <i class="fa fa-clock-o"></i>10 min ago
+        <i class="fa fa-clock-o"></i>{{ createdAt }}
       </div>
       <a class="card-link" href="#">
-        <h6 class="card-title">
-          Lorem ipsum dolor sit amet, consectetur adip.
-        </h6>
+        <h6 class="card-title"></h6>
       </a>
-
+      <img :src="imageUrl" v-if="imageUrl" alt="photo post de + username" />
       <p class="card-text">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo recusandae
-        nulla rem eos ipsa praesentium esse magnam nemo dolor sequi fuga quia
-        quaerat cum, obcaecati hic, molestias minima iste voluptates.
+        {{ content }}
       </p>
     </div>
     <ul class="nav d-flex justify-content-start mb-4">
@@ -67,8 +66,19 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import Comment from "./Comment.vue";
+export default {
+  props: ["postId", "content", "createdAt", "userId", "imageUrl"],
+  components: {
+    Comment,
+  },
+  data() {
+    return {
+      user: [],
+    };
+  },
+};
 </script>
 
 <style></style>

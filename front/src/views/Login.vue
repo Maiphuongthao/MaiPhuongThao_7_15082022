@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import authApi from "../services/api";
 import { mapStores } from "pinia";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
@@ -97,7 +97,7 @@ export default {
 
   methods: {
     logIn() {
-      axios
+      authApi
         .post("http://localhost:3000/api/auth/login", this.user, {
           withCredentials: true,
         })

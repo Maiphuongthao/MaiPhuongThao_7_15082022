@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 
+
 export const useAuthStore = defineStore("store", {
   state: () => {
     return {
@@ -25,12 +26,12 @@ export const useAuthStore = defineStore("store", {
       this.refreshToken = null;
     }, //tout est null
 
-    updateUser(user) {
-      this.user = user;
+    updateUser(data) {
+      this.user = data.updatedUser;
     }, // comme login
     returnRefreshToken(data) {
-     
       this.accessToken = data.token;
     }, // return seule le token
   },
 });
+

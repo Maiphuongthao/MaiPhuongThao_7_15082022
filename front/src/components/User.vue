@@ -1,21 +1,21 @@
 <template>
   <div class="container d-flex justify-content-center align-items-center mt-5">
     <div class="card">
-      <div class="user text-center p-3">
+      <div class="user text-center pt-5">
         <div class="profile">
           <img
             v-if="imageUrl"
-            :src="`http://localhost:3000${imageUrl}`"
+            :src="imageUrl"
             :alt="'photo profile de' + username"
             class="rounded-circle"
-            width="80"
+            width="120"
           />
           <img
             v-else
             src="../assets/default.png"
             alt="photo user"
             class="rounded-circle"
-            width="80"
+            width="120"
           />
         </div>
         <div v-if="isAdmin == true" class="ribbon">
@@ -44,7 +44,7 @@
         </div>
 
         <div
-          class="d-flex justify-content-between align-items-center mt-4 px-4"
+          class="d-flex justify-content-between align-items-center my-4 px-4"
         >
           <button
             class="btn btn- md m-3 btn-primary py-1 px-2 rounded-pill shadow"
