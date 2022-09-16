@@ -1,14 +1,11 @@
 const User = require("../models/user");
 const Post = require("../models/post");
-const Comment = require("../models/comment");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const CryptoJS = require("crypto-js");
 require("dotenv").config();
 const fs = require("fs");
 const { signUpErrors, logInErrors } = require("../errors/errors");
-const user = require("../models/user");
-const passwordSchema = require("../middleware/password");
 
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
@@ -239,23 +236,19 @@ exports.exportData = (req, res, next) => {
 //////////////////////UPDATE USER PRODILE////////////////
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
-    .then((user) => {
+    .then(async (user) => {
       if (!user) {
-        res.status(401).json(error);
+        res.status(404).json({ message: "user not found" }); // Error not found
       } else {
-        const update = req.file ? JSON.parse(req.body.user) : req.body;
-        // if email updated
-        if (update.email) {
-          update.email = encrypt(update.email); // the email is crypted
+        const update = {};
+        if (req.body.email) {
+          update.email = encrypt(req.body.email);
         }
-
-        // if password updated
-        if (update.password) {
-          const hash = bcrypt.hash(update.password, 10);
+        if (req.body.password) {
+          const hash = await bcrypt.hash(req.body.password, 10);
           update.password = hash;
         }
-
-        // check if image file is present
+        // Check image
         const userObject = req.file
           ? {
               ...update,
@@ -265,42 +258,28 @@ exports.updateUser = (req, res, next) => {
               ...update,
             };
 
-        const filename = user.imageUrl.split("/images/")[1];
-
         try {
-          if (
-            userObject.imageUrl &&
-            userObject.imageUrl !== "/images/default.png"
-          ) {
+          if (userObject.imageUrl) {
+            const filename = user.imageUrl.split("/images/")[1];
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
           console.log(error);
         }
-
+        // Update user new info in database
         User.findByIdAndUpdate(
-          {
-            _id: req.auth.userId,
-          },
-          userObject,
+          { _id: req.auth.userId },
+          { update, ...userObject, _id: req.auth.userId },
           {
             new: true,
-            upsert: true,
-            setDefaultsOnInsert: true,
           }
-        )
-          .then((updatedUser) => {
-            updatedUser.email = decrypt(updatedUser.email);
-            res
-              .status(200)
-              .json(hateoasLinks(req, updatedUser, updatedUser._id));
-          })
-          .catch((error) => {
-            res.status(400).json(error);
-          });
+        ).then((userUpdate) => {
+          userUpdate.email = decrypt(userUpdate.email);
+          res.status(200).json(hateoasLinks(req, userUpdate, userUpdate._id)); // Request ok
+        });
       }
     })
-    .catch((error) => res.status(500).json(error));
+    .catch((error) => res.status(500).json(error)); // Internal Error Server
 };
 
 /////////////////DELETE USER/////////////////////////
