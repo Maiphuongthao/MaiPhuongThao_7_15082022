@@ -1,51 +1,50 @@
 <template>
   <div class="container d-flex justify-content-center align-items-center mt-5">
     <div class="card">
-      <div class="user text-center p-3">
+      <div class="user text-center pt-5">
         <div class="profile">
           <img
+            v-if="imageUrl"
+            :src="imageUrl"
+            :alt="'photo profile de' + username"
+            class="rounded-circle"
+            width="120"
+          />
+          <img
+            v-else
             src="../assets/default.png"
             alt="photo user"
             class="rounded-circle"
-            width="80"
+            width="120"
           />
+        </div>
+        <div v-if="isAdmin == true" class="ribbon">
+          <span>Admin</span>
         </div>
       </div>
 
       <div class="mt-5 text-center">
-        <h4 class="mb-0">{{ user.username }}</h4>
-        <form>
-          <div class="form-group row pt-3 px-3">
-            <label for="staticUser" class="col-sm-2 col-form-label p-1"
-              ><i class="far fa-user btn-color"></i
-            ></label>
-            <div class="col-sm-10">
-              <input
-                type="text"
-                readonly
-                class="form-control-plaintext p-1"
-                id="staticUser"
-              />
-              {{ user.username }}
-            </div>
+        <h4 class="mb-0">{{ username }}</h4>
+
+        <div class="form-group row pt-3 px-3 align-items-center">
+          <label for="staticUser" class="col-sm-2 col-form-label "
+            ><i class="far fa-user fa-lg ms-5 btn-color"></i
+          ></label>
+          <div class="col-sm-10">
+            {{username}}
           </div>
-          <div class="form-group row px-3">
-            <label for="staticEmail" class="col-sm-2 col-form-label"
-              ><i class="far fa-envelope btn-color"></i
-            ></label>
-            <div class="col-sm-10">
-              <input
-                type="text"
-                readonly
-                class="form-control-plaintext"
-                id="staticEmail"
-              />{{ user.userEmail }}
-            </div>
+        </div>
+        <div class="form-group row px-3 align-items-center">
+          <label for="staticEmail" class="col-sm-2 col-form-label"
+            ><i class="far fa-envelope fa-lg ms-5 btn-color"></i
+          ></label>
+          <div class="col-sm-10">
+            {{email}}
           </div>
-        </form>
+        </div>
 
         <div
-          class="d-flex justify-content-between align-items-center mt-4 px-4"
+          class="d-flex justify-content-between align-items-center my-4 px-4"
         >
           <button
             class="btn btn- md m-3 btn-primary py-1 px-2 rounded-pill shadow"
@@ -161,37 +160,44 @@
 </template>
 
 <script>
-import axios from "axios";
+import authApi from "../services/api";
 import router from "../router";
 import { mapStores } from "pinia";
 import { useAuthStore } from "@/stores/authStore";
 
 export default {
-  data() {
+  props: ["imageUrl", "email", "username", "isAdmin"],
+  /*data() {
     return {
-      user: {
-        username: null,
-        userEmail: null,
-      },
+      user:[]
     };
   },
   computed: {
     ...mapStores(useAuthStore),
-  },
-  methods: {
+  }*/ methods: {
     deleteUser() {
-      axios
-        .delete("http://localhost:3000/api/auth", this.user)
+      authApi
+        .delete("/auth")
         .then(() => {
-          router.push("/signup");
+          const auth = useAuthStore();
+          auth.logOut();
+          router.push("/public");
         })
         .catch((error) => console.log(error));
     },
     //add fuction to export data
     exportUser() {
-      axios
-        .get("http://localhost:3000/api/auth/export", this.user)
-        .then((res) => res)
+      authApi
+        .get("/auth/export", { responseType: "blob" })
+        .then((res) => {
+          const fileBlob = new Blob([res.data], { type: "text/plain" });
+          const link = document.createElement("a");
+          link.href = window.URL.createObjectURL(fileBlob);
+          link.download = "userData.txt";
+          document.body.appendChild(link);
+
+          link.click();
+        })
         .catch((error) => console.log(error));
     },
   },

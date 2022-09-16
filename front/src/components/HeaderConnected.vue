@@ -44,33 +44,24 @@
 </template>
 
 <script>
-import axios from "axios";
+import authApi from "../services/api";
 import router from "../router/index";
 import { useAuthStore } from "@/stores/authStore";
-import { mapStores } from "pinia";
 
 export default {
   methods: {
     logout() {
-      axios
-        .get("http://localhost:3000/api/auth/logout", {
-          withCredentials: true,
-        })
+      authApi
+        .get("/auth/logout")
         .then(() => {
-          //destroy token from headers
-          axios.defaults.headers.common["Authorization"] = "";
-
           //delete user from store
           const auth = useAuthStore();
           auth.logOut();
           //redirect to login page
-          router.push("/public");
+          router.push("/login");
         })
         .catch((error) => console.log(error));
     },
-  },
-  computed: {
-    ...mapStores(useAuthStore),
   },
 };
 </script>

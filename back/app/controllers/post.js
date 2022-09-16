@@ -4,26 +4,17 @@ const Comment = require("../models/comment");
 
 require("dotenv").config();
 const fs = require("fs");
+const { populate } = require("../models/user");
+const path = require("path");
 
 //////////////READ ONE POST/////////////////////
 exports.readOnePost = (req, res, next) => {
   Post.findById(req.params.id)
+    .populate("comments")
     .then((post) => {
       if (req.body.imageUrl) {
         post.imageUrl = `${req.protocol}://${req.get("host")}${post.imageUrl}`;
-      };
-      if(req.body.comments){
-        Comment.find({ postId: req.body.postId })
-        .then(() => {
-          res.status(200).json();
-        })
-        .catch((error) =>
-          res.status(400).json({
-            error: error,
-          })
-        );
-      };
-      
+      }
       res.status(200).json(hateoasLinks(req, post, post._id));
     })
     .catch((error) =>
@@ -37,6 +28,7 @@ exports.readOnePost = (req, res, next) => {
 
 exports.readAllPosts = (req, res, next) => {
   Post.find()
+    .populate("comments")
     .sort({ createdAt: -1 })
     .then((posts) => {
       posts = posts.map((post) => {
@@ -54,25 +46,24 @@ exports.readAllPosts = (req, res, next) => {
 
 //////////////////CREATE ONE POST/////////////////////////:
 exports.createPost = (req, res, next) => {
-  //parse objet to string
+  if (!req.body.post) {
+    return res.status(422).json({
+      error: "The post is mandatory!",
+    });
+  }
   const postObject = JSON.parse(req.body.post);
-  //delete the id as it'll be generate automatique
   delete postObject._id;
-  //create new post
   const post = new Post({
     ...postObject,
+    imageUrl: req.file ? `/images/${req.file.filename}` : "",
     userId: req.auth.userId,
-    imageUrl: req.file ? `/images/${req.file.filename}` : " ",
   });
-
   post
     .save()
-    .then((newPost) => {
-      res.status(201).json(hateoasLinks(req, newPost, newPost._id));
-    })
-    .catch((error) => {
-      res.status(400).json({ error });
-    });
+    .then((newPost) =>
+      res.status(201).json(hateoasLinks(req, newPost, newPost._id))
+    )
+    .catch((error) => res.status(400).json(error));
 };
 
 ///////////////////////LIKE POST/////////////////////

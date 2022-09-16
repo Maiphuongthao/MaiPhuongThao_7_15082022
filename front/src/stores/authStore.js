@@ -1,20 +1,24 @@
 import { defineStore } from "pinia";
 
-export const useAuthStore = defineStore({
-  id: "store",
-  state: () => ({
-    user: null,
-    accessToken: null,
-    refreshToken: null,
-  }),
+
+export const useAuthStore = defineStore("store", {
+  state: () => {
+    return {
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+    };
+  },
   persist: true,
+
   //dynamique header dans app.vue
 
   actions: {
-    login(accessToken, user) {
+    loggingIn(data) {
       // donner de login
-      this.user = user;
-      this.accessToken = accessToken;
+      this.user = data.userSend;
+      this.accessToken = data.token;
+      this.refreshToken = data.refreshToken;
     },
     logOut() {
       this.user = null;
@@ -22,11 +26,12 @@ export const useAuthStore = defineStore({
       this.refreshToken = null;
     }, //tout est null
 
-    updateUser(user) {
-      this.user = user;
+    updateUser(data) {
+      this.user = data.updatedUser;
     }, // comme login
-    refreshToken(refreshToken) {
-      this.refreshToken = refreshToken;
+    returnRefreshToken(data) {
+      this.accessToken = data.token;
     }, // return seule le token
   },
 });
+

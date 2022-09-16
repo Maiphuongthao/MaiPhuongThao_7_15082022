@@ -31,6 +31,7 @@
               id="message"
               rows="3"
               placeholder="Quoi de neuf?"
+              v-model="this.post.content"
             ></textarea>
           </div>
         </div>
@@ -52,13 +53,20 @@
         </div>
       </div>
       <div class="btn-toolbar justify-content-between">
-        <div class="btn-group mt-2">
-          <button type="submit" class="btn btn-color">
-            <i class="far fa-paper-plane"></i>
-          </button>
+        <div class="col-12 btn-group mt-2">
           <button type="file" class="btn btn-color mx-3">
             <label for="formFile"><i class="fas fa-images"></i></label>
-            <input type="file" class="form-control" id="formFile" hidden />
+            <input
+              @change="onSubmit"
+              name="imageUrl"
+              type="file"
+              class="form-control"
+              id="formFile"
+              hidden
+            />
+          </button>
+          <button type="submit" @click="onUpload" class="btn btn-color">
+            <i class="far fa-paper-plane"></i>
           </button>
         </div>
         <div class="btn-group"></div>
@@ -68,5 +76,41 @@
 </template>
 
 <script>
-export default {};
+import authApi from "../services/api";
+import { usePostStore } from "../stores/postStore";
+export default {
+  data() {
+    return {
+      post: {
+        content: "",
+        imageUrl: "",
+      },
+    };
+  },
+  methods: {
+    onSubmit(event) {
+      this.post.imageUrl = event.target.files[0];
+    },
+
+    onUpload() {
+      const fd = new FormData();
+      fd.append("image", this.post.imageUrl);
+      fd.append("content", this.post.content);
+      console.log("hello==" + fd.get("content"));
+
+      authApi
+        .post("/post", fd, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((res) => {
+          const auth = usePostStore;
+          auth.createPost(res.data);
+          console.log("data=====" + res.data);
+        })
+        .catch((error) => console.log(error));
+    },
+  },
+};
 </script>
