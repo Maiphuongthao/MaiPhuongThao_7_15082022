@@ -246,7 +246,7 @@ exports.updateUser = (req, res, next) => {
         const update = req.file ? JSON.parse(req.body.user) : req.body;
         // if email updated
         if (update.email) {
-          update.email = encryptMail(update.email); // the email is crypted
+          update.email = encrypt(update.email); // the email is crypted
         }
 
         // if password updated
@@ -268,7 +268,10 @@ exports.updateUser = (req, res, next) => {
         const filename = user.imageUrl.split("/images/")[1];
 
         try {
-          if (userObject.imageUrl) {
+          if (
+            userObject.imageUrl &&
+            userObject.imageUrl !== "/images/default.png"
+          ) {
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
@@ -287,6 +290,7 @@ exports.updateUser = (req, res, next) => {
           }
         )
           .then((updatedUser) => {
+            updatedUser.email = decrypt(updatedUser.email);
             res
               .status(200)
               .json(hateoasLinks(req, updatedUser, updatedUser._id));
