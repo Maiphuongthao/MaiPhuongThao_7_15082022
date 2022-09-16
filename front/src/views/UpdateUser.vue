@@ -114,6 +114,7 @@ import router from "../router";
 
 export default {
   components: {
+    // eslint-disable-next-line vue/no-reserved-component-names
     Form,
     Field,
     ErrorMessage,
@@ -180,8 +181,8 @@ export default {
     this.user = auth.user;
   },
   methods: {
-    imageChange() {
-      this.updateUser.imageUrl = this.$refs.file.files[0];
+    imageChange(e) {
+      this.updateUser.imageUrl = e.target.files[0];
     },
 
     onSubmit() {
