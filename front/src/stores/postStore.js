@@ -11,9 +11,8 @@ export const usePostStore = defineStore("post", {
   //dynamique header dans app.vue
 
   actions: {
-    createPost(data) {
-      // donner de login
-      this.post = data.newPost;
+    getPosts(data) {
+      this.posts = data.posts;
     },
 
     deletePost() {

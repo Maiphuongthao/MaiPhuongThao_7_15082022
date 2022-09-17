@@ -5,7 +5,7 @@
         <div class="profile">
           <img
             v-if="imageUrl"
-            :src="imageUrl"
+            v-bind:src="imageUrl"
             :alt="'photo profile de' + username"
             class="rounded-circle"
             width="120"

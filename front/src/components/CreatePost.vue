@@ -25,7 +25,6 @@
           aria-labelledby="posts-tab"
         >
           <div class="form-group">
-            <label class="sr-only" for="message">post</label>
             <textarea
               class="form-control"
               id="message"
@@ -35,35 +34,22 @@
             ></textarea>
           </div>
         </div>
-        <div
-          class="tab-pane fade"
-          id="images"
-          role="tabpanel"
-          aria-labelledby="images-tab"
-        >
-          <div class="form-group">
-            <div class="custom-file">
-              <input type="file" class="custom-file-input" id="customFile" />
-              <label class="custom-file-label icon-color" for="customFile"
-                >Ajouter</label
-              >
-            </div>
-          </div>
-          <div class="py-4"></div>
-        </div>
       </div>
       <div class="btn-toolbar justify-content-between">
         <div class="col-12 btn-group mt-2">
+          <input
+            @change="onSubmit"
+            name="imageUrl"
+            type="file"
+            class="form-control"
+            id="formFile"
+            ref="fileInput"
+            hidden
+          />
           <button type="file" class="btn btn-color mx-3">
-            <label for="formFile"><i class="fas fa-images"></i></label>
-            <input
-              @change="onSubmit"
-              name="imageUrl"
-              type="file"
-              class="form-control"
-              id="formFile"
-              hidden
-            />
+            <div @click="$refs.fileInput.click()" for="formFile">
+              <i class="fas fa-images"></i>
+            </div>
           </button>
           <button type="submit" @click="onUpload" class="btn btn-color">
             <i class="far fa-paper-plane"></i>
@@ -76,15 +62,13 @@
 </template>
 
 <script>
+import router from "../router/index";
 import authApi from "../services/api";
-import { usePostStore } from "../stores/postStore";
+
 export default {
   data() {
     return {
-      post: {
-        content: "",
-        imageUrl: "",
-      },
+      post: [],
     };
   },
   methods: {
@@ -94,20 +78,30 @@ export default {
 
     onUpload() {
       const fd = new FormData();
-      fd.append("image", this.post.imageUrl);
-      fd.append("content", this.post.content);
-      console.log("hello==" + fd.get("content"));
+
+      if (!this.post.content && !this.post.imageUrl) {
+        alert("Veuillez ajouter votre text ou image");
+      }
+
+      if (this.post.imageUrl) {
+        if (this.post.imageUrl.size >= 500000) {
+          alert("Le fichier ne doit pas dépasser 50ko");
+        } else {
+          fd.append("image", this.post.imageUrl);
+        }
+      }
+      if (this.post.content) {
+        if (this.post.content > 1000 || this.post.contetn < 0) {
+          alert("Vous pouvez écrire 1000 lettres");
+        }
+        fd.append("post", JSON.stringify({ content: this.post.content }));
+      }
 
       authApi
-        .post("/post", fd, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
+        .post("/post", fd)
         .then((res) => {
-          const auth = usePostStore;
-          auth.createPost(res.data);
-          console.log("data=====" + res.data);
+          router.push("/");
+          return res.data;
         })
         .catch((error) => console.log(error));
     },

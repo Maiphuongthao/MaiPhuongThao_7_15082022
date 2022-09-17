@@ -1,6 +1,6 @@
 <template>
   <User
-  :class="this.user.userId"
+    :class="this.user.userId"
     :imageUrl="this.user.imageUrl"
     :alt="this.user.username"
     :email="this.user.email"
@@ -13,7 +13,6 @@
 import authApi from "../services/api";
 import User from "../components/User.vue";
 
-
 export default {
   components: {
     User,
@@ -24,12 +23,17 @@ export default {
     };
   },
   mounted() {
-    authApi
-      .get("/auth")
-      .then((res) => {
-        this.user = res.data;
-      })
-      .catch((error) => console.log(error));
+    this.getUser();
+  },
+  methods: {
+    getUser() {
+      authApi
+        .get("/auth")
+        .then((res) => {
+          this.user = res.data;
+        })
+        .catch((error) => console.log(error));
+    },
   },
 };
 </script>
