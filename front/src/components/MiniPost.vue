@@ -8,21 +8,20 @@
             id="post.userId"
           >
             <div class="mr-2">
-              <router-link to="/otherUser">
+              <router-link to="/otherUser" :value="this.user.userId">
                 <img
                   class="rounded-circle"
-                  width="45"
-                  :src="this.post.imageUrl"
-                  alt=""
+                  width="46"
+                  v-bind:src="this.user.imageUrl"
+                  :alt="'photo de ' + this.user.username"
               /></router-link>
             </div>
             <div class="ml-2">
-              <router-link to="/otherUser">
-                <div class="h6 m-0" @click="getUser">
-                  {{ this.post.userId }}
+              <router-link to="/otherUser" :value="this.user.userId">
+                <div :value="this.post.userId" class="h6 m-0" @click="getUser">
+                  {{ this.user.username }}
                 </div></router-link
               >
-              <div class="h7 text-muted">Miracles Lee Cross</div>
             </div>
           </div>
 
@@ -46,14 +45,13 @@
           <i class="fa fa-clock-o px-1 fa-lg"></i
           >{{ $moment(this.post.createdAt).format("MMMM Do YYYY, h:mm:ss a") }}
         </div>
-        <a class="card-link" href="this.photo.imageUrl">
-          <h6 class="card-title"></h6>
-        </a>
 
         <div>
           <img
+            width="250"
+            text-center
             :src="this.post.imageUrl"
-            :alt="'photo post de ' + this.post.userId"
+            :alt="'photo post de ' + this.user.username"
           />
           <p class="card-text">
             {{ this.post.content }}
@@ -64,7 +62,7 @@
         <ul class="nav d-flex justify-content-start mb-2">
           <li class="nav-item mx-3">
             <span class="like-text"></span>
-            <div class="icon" @click="like(post.id)">
+            <div class="icon" @click="addLike(post._id)">
               <i class="fa fa-gittip fa-lg"></i>J'aime
             </div>
             <span class="icon icon-2">{{ this.post.userLiked }}</span>
@@ -144,7 +142,6 @@
                           <i class="fas fa-images"></i>
                         </div>
                       </div>
-    
                     </div>
                   </div>
                 </div>
@@ -176,6 +173,7 @@
 <script>
 import router from "../router";
 import authApi from "../services/api";
+import { useAuthStore } from "../stores/authStore";
 
 export default {
   props: {
@@ -183,20 +181,38 @@ export default {
   },
   data() {
     return {
-      likes: "",
+      user: {},
+      like: "",
       likeCount: "",
       updatedPost: {
         content: "",
         imageUrl: "",
+        likes: "",
       },
     };
   },
+  mounted() {
+    const authStore = useAuthStore();
+    this.user = authStore.user;
+  },
   methods: {
-    like(id) {
+    addLike(id) {
+      //check if the user ID is inside
+      if (this.post.userLiked.includes(this.user.userId)) {
+        this.like = 0;
+      } else {
+        this.like = 1;
+      }
       id = this.post._id;
-      authApi.put(`/post/${id}`,{
-        body: this.likes
-      }).then().catch()
+
+      authApi
+        .post(`/post/${id}`, {
+          body: { likes: this.like },
+        })
+        .then((res) => {
+          console.log(res)
+        })
+        .catch((erreur) => console.log(erreur));
     },
 
     deletePost(id) {
