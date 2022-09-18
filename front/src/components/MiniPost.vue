@@ -80,16 +80,7 @@ export default {
   },
   methods: {
     deletePost(id) {
-      if (confirm("Vous-être sûr?")) {
-        authApi
-          .delete(`"/post/${id}"`)
-          .then((res) => {
-            const store = usePostStore;
-            store.deletePost(res);
-            return res;
-          })
-          .catch((error) => console.log(error));
-      }
+      this.$emit("delete-post", id);
     },
   },
 };

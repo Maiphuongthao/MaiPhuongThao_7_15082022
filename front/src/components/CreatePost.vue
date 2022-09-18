@@ -46,7 +46,11 @@
             ref="fileInput"
             hidden
           />
-          <button type="file" class="btn btn-color mx-3">
+          <button
+            @click="$refs.fileInput.click()"
+            type="file"
+            class="btn btn-color mx-3"
+          >
             <div for="formFile">
               <i class="fas fa-images"></i>
             </div>
@@ -88,7 +92,7 @@ export default {
         if (this.imageUrl.size >= 500000) {
           alert("Le fichier ne doit pas dépasser 50ko");
         } else {
-          fd.append("image", this.imageUrl);
+          fd.append("image", this.imageUrl, this.imageUrl.name);
         }
       }
       if (this.content) {
@@ -98,9 +102,13 @@ export default {
         fd.append("content", this.content);
       }
 
-      const newPost = fd;
+      authApi
+        .post("/post", fd)
+        .then((res) => {
+          return res;
+        })
+        .catch((error) => console.log(error));
       console.log("post===" + newPost);
-      this.$emit("add-post", newPost);
 
       this.content = "";
       this.imageUrl = "";

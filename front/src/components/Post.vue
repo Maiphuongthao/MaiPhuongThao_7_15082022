@@ -1,6 +1,10 @@
 <template>
   <div class="posts">
-    <div :key="post._id" v-for="post in posts">
+    <div
+      @delete-post="$emit('delete-post', post.id)"
+      :key="post.id"
+      v-for="post in posts"
+    >
       <MiniPost :post="post" />
       <Comment />
     </div>
@@ -23,6 +27,7 @@ export default {
       post: [],
     };
   },
+  emits: ["delete-post"],
 };
 </script>
 

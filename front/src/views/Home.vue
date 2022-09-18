@@ -1,7 +1,7 @@
 <template>
   <div id="main-body">
-    <CreatePost @add-post="addPost" />
-    <Post :posts="posts" />
+    <CreatePost />
+    <Post @delete-post="deletePost" :posts="posts" />
   </div>
 </template>
 
@@ -26,8 +26,15 @@ export default {
     this.posts = this.getPosts();
   },
   methods: {
-    addPost(post) {
-      this.posts = [...this.posts, post];
+    deletePost(id) {
+      if (confirm("Vous-être sûr?")) {
+        //const id = this.posts.map((post) => post.id).indexOf(this.post._id); // find index of your object
+        //this.posts.splice(id, 1);
+        const res = authApi.delete(`/post/${id}`);
+        res.status === 204
+          ? (this.posts = this.posts.filter((post) => post.id !== id))
+          : alert("une erreur est survenue");
+      }
     },
 
     getPosts() {
