@@ -144,9 +144,9 @@ exports.updatePost = (req, res, next) => {
           }
         : { ...req.body };
 
-      const filename = post.imageUrl.split("/images/")[1];
       try {
         if (postObject.imageUrl) {
+          const filename = post.imageUrl.split("/images/")[1];
           fs.unlinkSync(`images/${filename}`);
         }
       } catch (error) {
@@ -173,13 +173,14 @@ exports.deletePost = (req, res, next) => {
   Post.findById({ _id: req.params.id })
 
     .then((post) => {
+      console.log("id==" + req.params.id);
       console.log("id==" + post);
       if (post.userId != req.auth.userId) {
         res.status(403).json({ message: "Unthorized request" });
       } else {
         const filename = post.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${filename}`, () => {
-          Post.findByIdAndDelete({ _id: req.params.id })
+        fs.unlink(`images/${filename}`, async () => {
+          await Post.findByIdAndDelete({ _id: req.params.id })
             .then(() => {
               Comment.deleteMany({ postId: req.params.id })
                 .then(() => res.status(204).send())
