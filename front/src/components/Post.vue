@@ -1,9 +1,9 @@
 <template>
   <div class="posts">
-    <div :key="post.id" v-for="post in posts">
-      <MiniPost :post="post" /> <Comment />
+    <div :key="post._id" v-for="post in posts">
+      <MiniPost :post="post" />
+      <Comment />
     </div>
-   
   </div>
 </template>
 
@@ -22,10 +22,7 @@ export default {
     return {
       post: [],
     };
-    
   },
-  methods:{
-  }
 };
 </script>
 

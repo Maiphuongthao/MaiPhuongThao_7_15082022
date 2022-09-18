@@ -46,13 +46,12 @@ exports.readAllPosts = (req, res, next) => {
 
 //////////////////CREATE ONE POST/////////////////////////:
 exports.createPost = (req, res, next) => {
-  if (!req.body.post) {
-    return res.status(422).json({
-      error: "The post is mandatory!",
-    });
-  }
   const postObject = JSON.parse(req.body.post);
+
   delete postObject._id;
+  if (!postObject.content && !postObject.imageUrl) {
+    res.status(422).json({ message: "You need to add content or image" });
+  }
   const post = new Post({
     ...postObject,
     imageUrl: req.file ? `/images/${req.file.filename}` : "",
@@ -153,6 +152,7 @@ exports.updatePost = (req, res, next) => {
       } catch (error) {
         console.error(error);
       }
+
       Post.findByIdAndUpdate(
         { _id: req.params.id },
         { ...postObject, _id: req.params.id },
@@ -170,14 +170,16 @@ exports.updatePost = (req, res, next) => {
 
 //////////////////////////DELETE POST/////////////////////////
 exports.deletePost = (req, res, next) => {
-  Post.findOne({ _id: req.params.id })
+  Post.findById({ _id: req.params.id })
+
     .then((post) => {
+      console.log("id==" + post);
       if (post.userId != req.auth.userId) {
         res.status(403).json({ message: "Unthorized request" });
       } else {
         const filename = post.imageUrl.split("/images/")[1];
         fs.unlink(`images/${filename}`, () => {
-          Post.deleteOne({ _id: req.params.id })
+          Post.findByIdAndDelete({ _id: req.params.id })
             .then(() => {
               Comment.deleteMany({ postId: req.params.id })
                 .then(() => res.status(204).send())

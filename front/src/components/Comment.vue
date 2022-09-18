@@ -79,10 +79,6 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  msg: {
-    type: String,
-  },
-});
+<script>
+export default{}
 </script>

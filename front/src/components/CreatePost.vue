@@ -1,5 +1,5 @@
 <template>
-  <div class="card gedf-card">
+  <form @submit="onSubmit" class="card gedf-card" enctype="multipart/form-data">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
         <li class="nav-item">
@@ -30,7 +30,7 @@
               id="message"
               rows="3"
               placeholder="Quoi de neuf?"
-              v-model="this.post.content"
+              v-model="content"
             ></textarea>
           </div>
         </div>
@@ -38,7 +38,7 @@
       <div class="btn-toolbar justify-content-between">
         <div class="col-12 btn-group mt-2">
           <input
-            @change="onSubmit"
+            @change="onUpload"
             name="imageUrl"
             type="file"
             class="form-control"
@@ -47,18 +47,18 @@
             hidden
           />
           <button type="file" class="btn btn-color mx-3">
-            <div @click="$refs.fileInput.click()" for="formFile">
+            <div for="formFile">
               <i class="fas fa-images"></i>
             </div>
           </button>
-          <button type="submit" @click="onUpload" class="btn btn-color">
+          <button type="submit" class="btn btn-color">
             <i class="far fa-paper-plane"></i>
           </button>
         </div>
         <div class="btn-group"></div>
       </div>
     </div>
-  </div>
+  </form>
 </template>
 
 <script>
@@ -68,42 +68,42 @@ import authApi from "../services/api";
 export default {
   data() {
     return {
-      post: [],
+      content: "",
+      imageUrl: "",
     };
   },
   methods: {
-    onSubmit(event) {
-      this.post.imageUrl = event.target.files[0];
+    onUpload(event) {
+      this.imageUrl = event.target.files[0];
     },
 
-    onUpload() {
+    onSubmit() {
       const fd = new FormData();
 
-      if (!this.post.content && !this.post.imageUrl) {
+      if (!this.content && !this.imageUrl) {
         alert("Veuillez ajouter votre text ou image");
       }
 
-      if (this.post.imageUrl) {
-        if (this.post.imageUrl.size >= 500000) {
+      if (this.imageUrl) {
+        if (this.imageUrl.size >= 500000) {
           alert("Le fichier ne doit pas dépasser 50ko");
         } else {
-          fd.append("image", this.post.imageUrl);
+          fd.append("image", this.imageUrl);
         }
       }
-      if (this.post.content) {
-        if (this.post.content > 1000 || this.post.contetn < 0) {
+      if (this.content) {
+        if (this.content > 1000 || this.content < 0) {
           alert("Vous pouvez écrire 1000 lettres");
         }
-        fd.append("post", JSON.stringify({ content: this.post.content }));
+        fd.append("content", this.content);
       }
 
-      authApi
-        .post("/post", fd)
-        .then((res) => {
-          router.push("/");
-          return res.data;
-        })
-        .catch((error) => console.log(error));
+      const newPost = fd;
+      console.log("post===" + newPost);
+      this.$emit("add-post", newPost);
+
+      this.content = "";
+      this.imageUrl = "";
     },
   },
 };

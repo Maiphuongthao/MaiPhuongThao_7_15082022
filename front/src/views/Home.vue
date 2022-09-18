@@ -1,15 +1,16 @@
 <template>
   <div id="main-body">
-    <CreatePost />
+    <CreatePost @add-post="addPost" />
     <Post :posts="posts" />
   </div>
 </template>
 
 <script>
 import authApi from "../services/api";
-import router from "../router";
+import { usePostStore } from "../stores/postStore";
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
+
 export default {
   name: "App",
   components: {
@@ -22,16 +23,22 @@ export default {
     };
   },
   created() {
-    this.getPosts();
+    this.posts = this.getPosts();
   },
   methods: {
+    addPost(post) {
+      this.posts = [...this.posts, post];
+    },
+
     getPosts() {
       authApi
         .get("http://localhost:3000/api/post")
         .then((res) => {
-          console.log(res.data);
           this.posts = res.data;
-          router.push("/");
+          console.log(res.data);
+
+          const store = usePostStore();
+          store.getPosts(res.data);
         })
         .catch((error) => console.log(error));
     },
@@ -43,6 +50,6 @@ export default {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
-  width: 1120px;
+  max-width: 1120px;
 }
 </style>

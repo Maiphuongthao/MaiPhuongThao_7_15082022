@@ -27,18 +27,12 @@
           </div>
 
           <div class="d-flex flex-row gap-3 align-items-center">
-            <div class="d-flex align-items-center">
-              <a href="">
-                <i class="fas fa-pen"></i>
-                <span class="ms-1 fs-10">Modifier</span></a
-              >
+            <div @click="updatePost" class="d-flex align-items-center icon">
+              <i class="fas fa-pen"></i>Modifier
             </div>
 
-            <div class="d-flex align-items-center">
-              <a href="">
-                <i class="fas fa-trash-alt"></i>
-                <span class="ms-1 fs-10">Supprimer</span></a
-              >
+            <div @click="deletePost" class="d-flex align-items-center icon">
+              <i class="fas fa-trash-alt"></i>Supprimer
             </div>
           </div>
         </div>
@@ -62,14 +56,13 @@
       <div class="card-footer pt-3">
         <ul class="nav d-flex justify-content-start mb-2">
           <li class="nav-item mx-3">
-            <a class="icon" href="#"
-              ><i class="fa fa-gittip fa-lg"></i>J'aime</a
-            >
+            <span class="like-text"></span>
+            <div class="icon"><i class="fa fa-gittip fa-lg"></i>J'aime</div>
           </li>
           <li class="nav-item">
-            <a class="icon" href="#"
-              ><i class="fa fa-comment fa-lg"></i> Commenter</a
-            >
+            <div class="icon">
+              <i class="fa fa-comment fa-lg"></i> Commenter
+            </div>
           </li>
         </ul>
       </div>
@@ -78,9 +71,26 @@
 </template>
 
 <script>
+import { usePostStore } from "../stores/postStore";
+import authApi from "../services/api";
+
 export default {
   props: {
     post: Object,
+  },
+  methods: {
+    deletePost(id) {
+      if (confirm("Vous-être sûr?")) {
+        authApi
+          .delete(`"/post/${id}"`)
+          .then((res) => {
+            const store = usePostStore;
+            store.deletePost(res);
+            return res;
+          })
+          .catch((error) => console.log(error));
+      }
+    },
   },
 };
 </script>

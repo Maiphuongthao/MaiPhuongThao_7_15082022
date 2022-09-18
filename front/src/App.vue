@@ -21,9 +21,11 @@ img {
 }
 a {
   text-decoration: none;
-  color: #4e5166;
+}
+.icon{
+  color:#B66878;
 }
 .icon:hover {
-  color: #ffd7d7;
+  color: #FD2D01;
 }
 </style>
