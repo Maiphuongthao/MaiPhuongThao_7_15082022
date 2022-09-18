@@ -1,7 +1,7 @@
 <template>
   <div class="posts">
     <div :key="post.id" v-for="post in posts">
-      <MiniPost @delete-post="$emit('delete-post', post.id)" :post="post" />
+      <MiniPost @delete-post="$emit('delete-post', post._id)" :post="post" />
       <Comment />
     </div>
   </div>
@@ -20,7 +20,7 @@ export default {
   },
   data() {
     return {
-      post: [],
+      newpost: {},
     };
   },
   emits: ["delete-post"],
