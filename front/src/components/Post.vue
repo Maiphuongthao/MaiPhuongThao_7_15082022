@@ -1,11 +1,7 @@
 <template>
   <div class="posts">
-    <div
-      @delete-post="$emit('delete-post', post.id)"
-      :key="post.id"
-      v-for="post in posts"
-    >
-      <MiniPost :post="post" />
+    <div :key="post.id" v-for="post in posts">
+      <MiniPost @delete-post="$emit('delete-post', post.id)" :post="post" />
       <Comment />
     </div>
   </div>

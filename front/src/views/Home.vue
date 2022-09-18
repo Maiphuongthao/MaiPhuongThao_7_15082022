@@ -1,6 +1,6 @@
 <template>
   <div id="main-body">
-    <CreatePost />
+    <CreatePost/>
     <Post @delete-post="deletePost" :posts="posts" />
   </div>
 </template>
@@ -26,6 +26,7 @@ export default {
     this.posts = this.getPosts();
   },
   methods: {
+
     deletePost(id) {
       if (confirm("Vous-être sûr?")) {
         //const id = this.posts.map((post) => post.id).indexOf(this.post._id); // find index of your object
