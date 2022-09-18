@@ -185,7 +185,6 @@ exports.deletePost = (req, res, next) => {
               Comment.deleteMany({ postId: req.params.id })
                 .then(() => res.status(204).send())
                 .catch((error) => res.status(400).json(error));
-              res.status(204).send();
             })
             .catch((error) => res.status(400).json({ error }));
         });
