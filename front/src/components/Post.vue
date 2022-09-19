@@ -2,13 +2,11 @@
   <div class="posts">
     <div :key="post.id" v-for="post in posts">
       <MiniPost @delete-post="$emit('delete-post', post._id)" :post="post" />
-      <Comment />
     </div>
   </div>
 </template>
 
 <script>
-import Comment from "./Comment.vue";
 import MiniPost from "./MiniPost.vue";
 export default {
   props: {
@@ -16,7 +14,6 @@ export default {
   },
   components: {
     MiniPost,
-    Comment,
   },
   data() {
     return {

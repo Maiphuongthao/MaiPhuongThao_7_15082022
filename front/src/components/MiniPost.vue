@@ -1,24 +1,28 @@
 <template>
-  <div class="post">
+  <div class="post p-4">
     <div class="card gedf-card">
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
           <div
             class="d-flex justify-content-between align-items-center"
-            id="post.userId"
+            id="profile-bar"
           >
-            <div class="mr-2">
+            <div class="m-4">
               <router-link to="/otherUser" :value="this.user.userId">
                 <img
                   class="rounded-circle"
-                  width="46"
+                  width="50"
                   v-bind:src="this.user.imageUrl"
                   :alt="'photo de ' + this.user.username"
               /></router-link>
             </div>
             <div class="ml-2">
               <router-link to="/otherUser" :value="this.user.userId">
-                <div :value="this.post.userId" class="h6 m-0" @click="getUser">
+                <div
+                  :value="this.post.userId"
+                  class="h6 m-0 profile-name"
+                  @click="getUser"
+                >
                   {{ this.user.username }}
                 </div></router-link
               >
@@ -46,10 +50,10 @@
           >{{ $moment(this.post.createdAt).format("MMMM Do YYYY, h:mm:ss a") }}
         </div>
 
-        <div>
+        <div class="mx-4">
           <img
+            class="mx-auto my-4 d-flex"
             width="250"
-            text-center
             :src="this.post.imageUrl"
             :alt="'photo post de ' + this.user.username"
           />
@@ -67,11 +71,12 @@
             </div>
             <span class="icon icon-2">{{ this.post.userLiked }}</span>
           </li>
-          <li class="nav-item">
+
+          <!--<li class="nav-item">
             <div class="icon">
               <i class="fa fa-comment fa-lg"></i> Commenter
             </div>
-          </li>
+          </li>-->
         </ul>
       </div>
       <!--modal-->
@@ -182,26 +187,36 @@ export default {
   data() {
     return {
       user: {},
-      like: "",
-      likeCount: "",
+      
+      userLiked: "",
       updatedPost: {
         content: "",
         imageUrl: "",
-        likes: "",
       },
     };
   },
-  mounted() {
-    const authStore = useAuthStore();
+  created(){
+const authStore = useAuthStore();
     this.user = authStore.user;
+  },
+  mounted() {
+    const checkAdmin = ()=>{
+      isAdmin = false
+if(this.user.userId === this.post.userId || this.user.isAdmin ===true ){
+  return 
+}
+    },
   },
   methods: {
     addLike(id) {
+      let like;
+      const usersLiked = this.post.userLiked;
+      console.log("usersLiked==" + usersLiked);
       //check if the user ID is inside
-      if (this.post.userLiked.includes(this.user.userId)) {
-        this.like = 0;
+      if (usersLiked.includes(this.user.userId)) {
+        like = 0;
       } else {
-        this.like = 1;
+        like = 1;
       }
       id = this.post._id;
 
@@ -210,7 +225,8 @@ export default {
           body: { likes: this.like },
         })
         .then((res) => {
-          console.log(res)
+          console.log("res==" + likes);
+          return res;
         })
         .catch((erreur) => console.log(erreur));
     },
@@ -249,3 +265,14 @@ export default {
   },
 };
 </script>
+<style>
+#profile.name {
+  color: #4e5166;
+  font-size: 1.5em;
+  font-weight: 500;
+}
+a {
+  text-decoration: none;
+  color: #4e5166;
+}
+</style>
