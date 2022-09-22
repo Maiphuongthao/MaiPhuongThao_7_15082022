@@ -46,7 +46,40 @@ exports.readAllPosts = (req, res, next) => {
 
 //////////////////CREATE ONE POST/////////////////////////:
 exports.createPost = (req, res, next) => {
-  const postObject = JSON.parse(req.body.post);
+  if (!req.body.content & !req.body.imageUrl) {
+    res.status(400).send({
+      message: "You must add content to your post!",
+    });
+  }
+  let newPost = {};
+  if (req.body.content) {
+    newPost.content = req.body.content;
+  }
+
+  // Check image
+  const postObject = req.file
+    ? {
+        ...newPost,
+        imageUrl: `/images/${req.file.filename}`,
+      }
+    : {
+        ...newPost,
+      };
+
+  const post = new Post({
+    ...postObject,
+    newPost,
+    userId: req.auth.userId,
+  });
+  post
+    .save()
+    .then((newPosted) =>
+      res.status(201).json(hateoasLinks(req, newPosted, newPosted._id))
+    )
+    .catch((error) => res.status(400).json(error));
+};
+
+/*const postObject = JSON.parse(req.body.post);
 
   delete postObject._id;
   if (!postObject.content && !postObject.imageUrl) {
@@ -63,7 +96,7 @@ exports.createPost = (req, res, next) => {
       res.status(201).json(hateoasLinks(req, newPost, newPost._id))
     )
     .catch((error) => res.status(400).json(error));
-};
+};*/
 
 ///////////////////////LIKE POST/////////////////////
 exports.likePost = (req, res, next) => {
@@ -133,16 +166,25 @@ exports.likePost = (req, res, next) => {
 exports.updatePost = (req, res, next) => {
   //get post id
   Post.findById(req.params.id).then((post) => {
+    console.log("post " + post);
     if (post.userId !== req.auth.userId) {
-      res.status(403).json({ error: new Error("Unauthorized request!") });
+      res.status(403).json({
+        error: "Unauthorized request!",
+      });
     } else {
-      //Check if image file existe or not, if yes create postObject with new img, if not only other info
+      const update = {};
+      if (req.body.content) {
+        update.content = req.body.content;
+      }
+
       const postObject = req.file
         ? {
-            ...JSON.parse(req.body.post),
+            ...update,
             imageUrl: `/images/${req.file.filename}`,
           }
-        : { ...req.body };
+        : {
+            ...update,
+          };
 
       try {
         if (postObject.imageUrl) {
@@ -150,49 +192,52 @@ exports.updatePost = (req, res, next) => {
           fs.unlinkSync(`images/${filename}`);
         }
       } catch (error) {
-        console.error(error);
+        console.log(error);
       }
-
       Post.findByIdAndUpdate(
         { _id: req.params.id },
-        { ...postObject, _id: req.params.id },
-        { new: true, setDefaultsOnInsert: true, updert: true }
+        { ...postObject },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+        }
       )
-        .then((postUpdated) => {
-          res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id));
-        })
-        .catch((error) => {
-          res.status(400).json({ error });
-        });
+        .then((postUpdated) =>
+          res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id))
+        )
+        .catch((error) =>
+          res.status(400).json({
+            error,
+          })
+        );
     }
   });
 };
 
 //////////////////////////DELETE POST/////////////////////////
 exports.deletePost = (req, res, next) => {
-  Post.findById({ _id: req.params.id })
-
+  Post.findByIdAndDelete(req.params.id)
     .then((post) => {
-      console.log("id==" + req.params.id);
-      console.log("id==" + post);
-      if (post.userId != req.auth.userId) {
-        res.status(403).json({ message: "Unthorized request" });
-      } else {
-        const filename = post.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${filename}`, async () => {
-          await Post.findByIdAndDelete({ _id: req.params.id })
-            .then(() => {
-              Comment.deleteMany({ postId: req.params.id })
-                .then(() => res.status(204).send())
-                .catch((error) => res.status(400).json(error));
-            })
-            .catch((error) => res.status(400).json({ error }));
+      if (post.userId !== req.auth.userId) {
+        return res.status(403).json({
+          error: "Unauthorized request!",
         });
       }
+      const filename = post.imageUrl.split("/images/")[1];
+      fs.unlink(`images/${filename}`, function (err) {
+        if (err) throw err;
+        // if no error, file has been deleted successfully
+        Comment.deleteMany({ postId: req.params.id })
+          .then(() => res.sendStatus(204))
+          .catch((error) => res.status(400).json(error));
+      });
     })
-    .catch((error) => {
-      res.status(500).json({ error });
-    });
+    .catch((error) =>
+      res.status(500).json({
+        error,
+      })
+    );
 };
 
 const hateoasLinks = (req, post, id) => {

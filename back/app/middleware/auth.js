@@ -18,7 +18,7 @@ module.exports = (req, res, next) => {
       userId
     };
 
-    //Check if userId exist in body and if it isn't the same as userID of sauce then return error message, if not continue
+    //Check if userId exist in body and if it isn't the same as userID of post then return error message, if not continue
     if (req.body.userId && req.body.userId !== userId) {
       res.status(403).json({ error: "unauthorized requets" + error });
     } else {

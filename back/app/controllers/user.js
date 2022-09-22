@@ -7,6 +7,7 @@ require("dotenv").config();
 const fs = require("fs");
 const { signUpErrors, logInErrors } = require("../errors/errors");
 
+
 ////////ENCRYPT EMAIL/////////////
 function encrypt(value) {
   return CryptoJS.AES.encrypt(
@@ -87,7 +88,7 @@ exports.login = (req, res, next) => {
             { userId: user._id },
             //random token dispo pendant 24h
             process.env.TOKEN_SECRET,
-            { expiresIn: "12h" }
+            { expiresIn: "24h" }
           );
 
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired
@@ -128,7 +129,41 @@ exports.login = (req, res, next) => {
 ////////////////REFRESH TOKEN ROUTE////////////////////
 //whenever a token expires or user refresh, a new access token can be created
 
-exports.refresh = (req, res, next) => {
+
+exports.refresh = (req, res) => {
+  try {
+      const cookies = req.cookies;
+      if (!cookies?.jwt) return res.sendStatus(401);
+      const refreshToken = cookies.jwt;
+      const decodedRefreshToken = jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN
+      );
+      const userId = decodedRefreshToken.userId;
+      req.auth = {
+          userId
+      };
+      if (req.body.userId && req.body.userId !== userId) {
+          throw 'Invalid user ID';
+      } else {
+          const accessToken = jwt.sign({
+                  userId: decodedRefreshToken.userId
+              },
+              process.env.TOKEN_SECRET, {
+                  expiresIn: 15 * 60 * 60
+              }
+          );
+          res.json({
+              accessToken
+          });
+      }
+  } catch {
+      res.status(403).json({
+          error: new Error('Unauthorized request!')
+      });
+  }
+}
+/*exports.refresh = (req, res, next) => {
   const cookies = req.cookies;
 
   if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
@@ -148,20 +183,18 @@ exports.refresh = (req, res, next) => {
         userId: decoded.userId,
       }).exec();
 
-      if (!foundUser) return res.status(401).json({ message: "Unauthorized" });
-
       //correct token ==send new access token
       const accessToken = jwt.sign(
         { userId: foundUser._id },
         process.env.TOKEN_SECRET,
         {
-          expiresIn: "15m",
+          expiresIn: "24h",
         }
       );
       res.json({ accessToken });
     }
   );
-};
+};*/
 
 ///////////////////// LOGOUT /////////////////////////////////
 
@@ -172,9 +205,10 @@ exports.logout = (req, res, next) => {
     .then(() => {
       res.clearCookie("jwt", {
         httpOnly: true,
-        sameSite: "None",
+        //sameSite: "None",
         //secure: true,
       });
+      res.redirect("/");
       res.json({ message: "User is logged out" });
     })
     .catch((error) => res.status(404).json(error));
