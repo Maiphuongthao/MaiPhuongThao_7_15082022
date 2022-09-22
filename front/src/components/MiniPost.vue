@@ -8,22 +8,19 @@
             id="profile-bar"
           >
             <div class="m-4">
-              <router-link to="/otherUser" :value="this.user.userId">
-                <img
-                  class="rounded-circle"
-                  width="50"
-                  :src="`http://localhost:3000${this.user.imageUrl}`"
-                  :alt="'photo de ' + this.user.username"
-              /></router-link>
+              <router-link to="/otherUser">
+                <img class="rounded-circle" width="50" :src="user.imageUrl"
+                :alt="'photo de ' + user.username" /></router-link
+              >
             </div>
             <div class="ml-2">
-              <router-link to="/otherUser" :value="this.user.userId">
+              <router-link to="/otherUser">
                 <div
-                  :value="this.post.userId"
+                  value="this.post.userId"
                   class="h6 m-0 profile-name"
                   @click="getUser"
                 >
-                  {{ this.user.username }}
+                  {{ user.username }}
                 </div></router-link
               >
             </div>
@@ -55,7 +52,7 @@
             class="mx-auto my-4 d-flex"
             width="250"
             :src="this.post.imageUrl"
-            :alt="'photo post de ' + this.user.username"
+            :alt="'photo post de '"
           />
           <p class="card-text">
             {{ this.post.content }}
@@ -69,7 +66,7 @@
               type="button"
               class="btn btn-color"
               v-if="post.likes"
-              @click.prevent="likePost(post.id)"
+              @click.prevent="likePost(post._id)"
             >
               <i class="fa fa-gittip fa-lg"></i>J'aime
             </button>
@@ -77,7 +74,7 @@
               type="button"
               class="btn btn-default"
               v-else
-              @click.prevent="likePost(post.id)"
+              @click.prevent="likePost(post._id)"
             >
               <i class="fa fa-gittip fa-lg"></i>J'aime
             </button>
@@ -144,15 +141,15 @@
                         @change="onUploadPost"
                         name="imageUrl"
                         type="file"
-                        class="form-control"
+                        class="form-control upload_btn"
                         id="formFile"
                         ref="fileInput"
-                        hidden
+
                       />
                       <div
                         @click="$refs.fileInput.click()"
                         type="file"
-                        class="btn btn-color mx-3"
+                        class="btn btn-color mx-3 overlay-layer"
                       >
                         <div for="formFile">
                           <i class="fas fa-images"></i>
@@ -187,7 +184,6 @@
 </template>
 
 <script>
-import { boolean } from "yup";
 import router from "../router/index";
 import authApi from "../services/api";
 import { useAuthStore } from "../stores/authStore";
@@ -200,21 +196,29 @@ export default {
   data() {
     return {
       user: {},
-      postlikes: "",
-      likes: "",
-      usersLiked: "",
       updatedPost: {
         content: "",
         imageUrl: "",
       },
     };
   },
-  created() {
-    const authStore = useAuthStore();
-    this.user = authStore.user;
+  mounted() {
+    this.userOfPost();
   },
-
   methods: {
+    userOfPost(id) {
+      id = this.post.userId;
+      console.log("user" + id);
+      authApi
+        .get(`/auth/${id}`)
+        .then((res) => {
+          this.user = res.data;
+
+          console.log("data" + this.user.username);
+        })
+        .catch((error) => console.log(error));
+    },
+
     checkAdmin() {
       if (this.user.userId === this.post.userId || this.user.isAdmin === true) {
         this.showModif = !this.showModif;
@@ -224,25 +228,26 @@ export default {
     },
     likePost(id) {
       id = this.post._id;
-      this.userLiked = this.post.usersLiked;
+      let like;
+      const userLiked = this.post.usersLiked;
 
-      if (!this.usersLiked.includes(this.user.userId)) {
-        this.likes = 1;
-        authApi
-          .post(`/post/${id}`, { likes: this.likes })
-          .then((res) => {
-            return res;
-          })
-          .catch((erreur) => console.log(erreur));
+      const auth = useAuthStore();
+      const userFromStore = auth.user;
+
+      if (userLiked.includes(userFromStore._id)) {
+        like = 0;
       } else {
-        this.likes = 0;
-        authApi
-          .post(`/post/${id}`, { likes: this.likes })
-          .then((res) => {
-            return res;
-          })
-          .catch((erreur) => console.log(erreur));
+        like = 1;
       }
+
+      console.log("like" + like);
+      authApi
+        .post(`/post/${id}`, { likes: like })
+        .then((res) => {
+          location.reload();
+          return res;
+        })
+        .catch((erreur) => console.log(erreur));
     },
 
     deletePost(id) {

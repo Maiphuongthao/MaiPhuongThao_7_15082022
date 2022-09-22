@@ -119,16 +119,5 @@ export default {
 };
 </script>
 <style>
-.overlay-layer {
-  position: absolute;
-  opacity: 0.5;
-  z-index: 0;
-  text-align: center;
-}
-.upload_btn {
-  position: absolute;
-  background-color: black;
-  z-index: 10;
-  opacity: 0;
-}
+
 </style>
