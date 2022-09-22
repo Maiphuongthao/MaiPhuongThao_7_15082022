@@ -7,9 +7,11 @@
 
 <script>
 import authApi from "../services/api";
+import router from "../router/index";
 import { usePostStore } from "../stores/postStore";
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
+import { useAuthStore } from "../stores/authStore";
 
 export default {
   name: "App",
@@ -34,6 +36,7 @@ export default {
           .delete(`/post/${id}`)
           .then(() => {
             this.posts = this.posts.filter((post) => post.id !== id);
+            location.reload();
           })
           .catch((error) => console.log(error));
       }

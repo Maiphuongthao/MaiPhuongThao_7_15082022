@@ -1,11 +1,5 @@
 <template>
-  <User
-    :src="this.user.imageUrl"
-    :alt="this.user.imageUrl"
-    :email="this.user.email"
-    :isAdmin="this.user.isAdmin"
-    :username="this.user.username"
-  />
+  <User :user="user" />
 </template>
 
 <script>

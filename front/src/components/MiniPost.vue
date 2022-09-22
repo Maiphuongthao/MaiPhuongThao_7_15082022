@@ -12,7 +12,7 @@
                 <img
                   class="rounded-circle"
                   width="50"
-                  v-bind:src="this.user.imageUrl"
+                  :src="`http://localhost:3000${this.user.imageUrl}`"
                   :alt="'photo de ' + this.user.username"
               /></router-link>
             </div>
@@ -63,13 +63,24 @@
         </div>
       </div>
       <div class="card-footer pt-3">
-        <ul class="nav d-flex justify-content-start mb-2">
-          <li class="nav-item mx-3">
-            <span class="like-text"></span>
-            <div class="icon" @click="addLike(post._id)">
+        <ul class="nav d-flexjustify-content-start mb-2">
+          <li class="nav-item d-fex align-items-center">
+            <button
+              type="button"
+              class="btn btn-color"
+              v-if="post.likes"
+              @click.prevent="likePost(post.id)"
+            >
               <i class="fa fa-gittip fa-lg"></i>J'aime
-            </div>
-            <span class="icon icon-2">{{ this.post.userLiked }}</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-default"
+              v-else
+              @click.prevent="likePost(post.id)"
+            >
+              <i class="fa fa-gittip fa-lg"></i>J'aime
+            </button>
           </li>
 
           <!--<li class="nav-item">
@@ -176,9 +187,11 @@
 </template>
 
 <script>
-import router from "../router";
+import { boolean } from "yup";
+import router from "../router/index";
 import authApi from "../services/api";
 import { useAuthStore } from "../stores/authStore";
+import { usePostStore } from "../stores/postStore";
 
 export default {
   props: {
@@ -187,48 +200,49 @@ export default {
   data() {
     return {
       user: {},
-      
-      userLiked: "",
+      postlikes: "",
+      likes: "",
+      usersLiked: "",
       updatedPost: {
         content: "",
         imageUrl: "",
       },
     };
   },
-  created(){
-const authStore = useAuthStore();
+  created() {
+    const authStore = useAuthStore();
     this.user = authStore.user;
   },
-  mounted() {
-    const checkAdmin = ()=>{
-      isAdmin = false
-if(this.user.userId === this.post.userId || this.user.isAdmin ===true ){
-  return 
-}
-    },
-  },
-  methods: {
-    addLike(id) {
-      let like;
-      const usersLiked = this.post.userLiked;
-      console.log("usersLiked==" + usersLiked);
-      //check if the user ID is inside
-      if (usersLiked.includes(this.user.userId)) {
-        like = 0;
-      } else {
-        like = 1;
-      }
-      id = this.post._id;
 
-      authApi
-        .post(`/post/${id}`, {
-          body: { likes: this.like },
-        })
-        .then((res) => {
-          console.log("res==" + likes);
-          return res;
-        })
-        .catch((erreur) => console.log(erreur));
+  methods: {
+    checkAdmin() {
+      if (this.user.userId === this.post.userId || this.user.isAdmin === true) {
+        this.showModif = !this.showModif;
+      } else {
+        this.showModif = false;
+      }
+    },
+    likePost(id) {
+      id = this.post._id;
+      this.userLiked = this.post.usersLiked;
+
+      if (!this.usersLiked.includes(this.user.userId)) {
+        this.likes = 1;
+        authApi
+          .post(`/post/${id}`, { likes: this.likes })
+          .then((res) => {
+            return res;
+          })
+          .catch((erreur) => console.log(erreur));
+      } else {
+        this.likes = 0;
+        authApi
+          .post(`/post/${id}`, { likes: this.likes })
+          .then((res) => {
+            return res;
+          })
+          .catch((erreur) => console.log(erreur));
+      }
     },
 
     deletePost(id) {

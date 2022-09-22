@@ -22,10 +22,4 @@ img {
 a {
   text-decoration: none;
 }
-.icon{
-  color:#B66878;
-}
-.icon:hover {
-  color: #FD2D01;
-}
 </style>

@@ -213,7 +213,6 @@ export default {
 
           authStore.updateUser(res.data);
 
-          router.push("/user");
           alert("Vos modifications sont bien enregistrées ");
         })
         .catch((error) => console.log(error));
