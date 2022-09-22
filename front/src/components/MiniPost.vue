@@ -9,9 +9,12 @@
           >
             <div class="m-4">
               <router-link to="/otherUser">
-                <img class="rounded-circle" width="50" :src="user.imageUrl"
-                :alt="'photo de ' + user.username" /></router-link
-              >
+                <img
+                  class="rounded-circle"
+                  width="50"
+                  :src="user.imageUrl"
+                  :alt="'photo de ' + user.username"
+              /></router-link>
             </div>
             <div class="ml-2">
               <router-link to="/otherUser">
@@ -26,7 +29,10 @@
             </div>
           </div>
 
-          <div class="d-flex flex-row gap-3 align-items-center">
+          <div
+            class="d-flex flex-row gap-3 align-items-center"
+            v-if="isModificable(post.userId)"
+          >
             <div
               data-bs-toggle="modal"
               data-bs-target="#onUpdatePost"
@@ -48,12 +54,15 @@
         </div>
 
         <div class="mx-4">
-          <img
-            class="mx-auto my-4 d-flex"
-            width="250"
-            :src="this.post.imageUrl"
-            :alt="'photo post de '"
-          />
+          <div v-if="(this.displayPost = this.post.imageUrl)">
+            <img
+              class="mx-auto my-4 d-flex"
+              width="250"
+              :src="this.post.imageUrl"
+              :alt="'photo post de ' + this.user.username"
+            />
+          </div>
+
           <p class="card-text">
             {{ this.post.content }}
           </p>
@@ -144,7 +153,6 @@
                         class="form-control upload_btn"
                         id="formFile"
                         ref="fileInput"
-
                       />
                       <div
                         @click="$refs.fileInput.click()"
@@ -196,6 +204,7 @@ export default {
   data() {
     return {
       user: {},
+      displayPost: "",
       updatedPost: {
         content: "",
         imageUrl: "",
@@ -206,6 +215,15 @@ export default {
     this.userOfPost();
   },
   methods: {
+    isModificable(userId) {
+      const auth = useAuthStore();
+      const userFromAuthStore = auth.user;
+      return (
+        this.post.userId === userFromAuthStore._id ||
+        userFromAuthStore.isAdmin === true
+      );
+    },
+
     userOfPost(id) {
       id = this.post.userId;
       console.log("user" + id);
@@ -260,8 +278,8 @@ export default {
       id = this.post._id;
       const fd = new FormData();
       if (this.updatedPost.imageUrl) {
-        if (this.updatedPost.imageUrl.size >= 2621439) {
-          alert("Le fichier ne doit pas dépasser 2.5Mo");
+        if (this.updatedPost.imageUrl.size >= 5000000) {
+          alert("Le fichier ne doit pas dépasser 50ko");
         } else {
           fd.append("image", this.updatedPost.imageUrl);
         }
@@ -276,7 +294,7 @@ export default {
           console.log("res====" + res.data);
           this.updatedPost.content = res.data.content;
           this.updatedPost.imageUrl = res.data.imageUrl;
-          router.push("/");
+          location.reload();
           alert("Vos modifications sont bien enregistrées ");
         })
         .catch((error) => console.log(error));
