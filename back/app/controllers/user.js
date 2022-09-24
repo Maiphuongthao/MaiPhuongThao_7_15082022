@@ -88,7 +88,7 @@ exports.login = (req, res, next) => {
             { userId: user._id },
             //random token dispo pendant 24h
             process.env.TOKEN_SECRET,
-            { expiresIn: "20s" }
+            { expiresIn: "24h" }
           );
 
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired
@@ -100,7 +100,10 @@ exports.login = (req, res, next) => {
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
-
+          res.cookie("jwtToken", accessToken, {
+            httpOnly: true,
+            maxAge: "24h",
+          });
           res.cookie("jwt", refreshToken, {
             httpOnly: true, //accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
@@ -300,9 +303,7 @@ exports.updateUser = (req, res, next) => {
             };
         const filename = user.imageUrl.split("/images/")[1];
         try {
-          if (
-            userObject.imageUrl
-          ) {
+          if (userObject.imageUrl) {
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
