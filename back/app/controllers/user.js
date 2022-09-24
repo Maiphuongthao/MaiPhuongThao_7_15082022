@@ -100,10 +100,7 @@ exports.login = (req, res, next) => {
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
-          res.cookie("jwtToken", accessToken, {
-            httpOnly: true,
-            maxAge: "24h",
-          });
+
           res.cookie("jwt", refreshToken, {
             httpOnly: true, //accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
@@ -303,7 +300,9 @@ exports.updateUser = (req, res, next) => {
             };
         const filename = user.imageUrl.split("/images/")[1];
         try {
-          if (userObject.imageUrl) {
+          if (
+            userObject.imageUrl
+          ) {
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
