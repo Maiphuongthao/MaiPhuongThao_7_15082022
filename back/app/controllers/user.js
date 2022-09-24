@@ -45,6 +45,7 @@ exports.signup = (req, res, next) => {
         username: req.body.username,
         email: encrypt(req.body.email),
         password: hash,
+        isAdmin: req.body.isAdmin,
       });
       user
         .save()
@@ -87,7 +88,7 @@ exports.login = (req, res, next) => {
             { userId: user._id },
             //random token dispo pendant 24h
             process.env.TOKEN_SECRET,
-            { expiresIn: "12h" }
+            { expiresIn: "24h" }
           );
 
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired
@@ -99,11 +100,14 @@ exports.login = (req, res, next) => {
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
-
+          res.cookie("jwtToken", accessToken, {
+            httpOnly: true,
+            maxAge: "24h",
+          });
           res.cookie("jwt", refreshToken, {
             httpOnly: true, //accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
-            sameSite: "None", //cross-site cookie
+            //sameSite: "None", //cross-site cookie
             //secure: true,
             maxAge: 1000 * 60 * 60 * 24,
           });
@@ -128,7 +132,42 @@ exports.login = (req, res, next) => {
 ////////////////REFRESH TOKEN ROUTE////////////////////
 //whenever a token expires or user refresh, a new access token can be created
 
-exports.refresh = (req, res, next) => {
+exports.refresh = (req, res) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(401);
+    const refreshToken = cookies.jwt;
+    const decodedRefreshToken = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN
+    );
+    const userId = decodedRefreshToken.userId;
+    req.auth = {
+      userId,
+    };
+    if (req.body.userId && req.body.userId !== userId) {
+      throw "Invalid user ID";
+    } else {
+      const accessToken = jwt.sign(
+        {
+          userId: decodedRefreshToken.userId,
+        },
+        process.env.TOKEN_SECRET,
+        {
+          expiresIn: 15 * 60 * 60,
+        }
+      );
+      res.json({
+        accessToken,
+      });
+    }
+  } catch {
+    res.status(403).json({
+      error: new Error("Unauthorized request!"),
+    });
+  }
+};
+/*exports.refresh = (req, res, next) => {
   const cookies = req.cookies;
 
   if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
@@ -148,20 +187,18 @@ exports.refresh = (req, res, next) => {
         userId: decoded.userId,
       }).exec();
 
-      if (!foundUser) return res.status(401).json({ message: "Unauthorized" });
-
       //correct token ==send new access token
       const accessToken = jwt.sign(
         { userId: foundUser._id },
         process.env.TOKEN_SECRET,
         {
-          expiresIn: "15m",
+          expiresIn: "24h",
         }
       );
       res.json({ accessToken });
     }
   );
-};
+};*/
 
 ///////////////////// LOGOUT /////////////////////////////////
 
@@ -172,9 +209,10 @@ exports.logout = (req, res, next) => {
     .then(() => {
       res.clearCookie("jwt", {
         httpOnly: true,
-        sameSite: "None",
+        //sameSite: "None",
         //secure: true,
       });
+      res.redirect("/");
       res.json({ message: "User is logged out" });
     })
     .catch((error) => res.status(404).json(error));
@@ -241,6 +279,12 @@ exports.updateUser = (req, res, next) => {
         res.status(404).json({ message: "user not found" }); // Error not found
       } else {
         const update = {};
+        if (req.body.isAdmin) {
+          update.isAdmin = req.body.isAdmin;
+        }
+        if (req.body.username) {
+          update.username = req.body.username;
+        }
         if (req.body.email) {
           update.email = encrypt(req.body.email);
         }
@@ -257,10 +301,9 @@ exports.updateUser = (req, res, next) => {
           : {
               ...update,
             };
-
+        const filename = user.imageUrl.split("/images/")[1];
         try {
           if (userObject.imageUrl) {
-            const filename = user.imageUrl.split("/images/")[1];
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
@@ -272,6 +315,8 @@ exports.updateUser = (req, res, next) => {
           { update, ...userObject, _id: req.auth.userId },
           {
             new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
           }
         ).then((userUpdate) => {
           userUpdate.email = decrypt(userUpdate.email);

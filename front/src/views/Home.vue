@@ -1,19 +1,16 @@
 <template>
-  <CreatePost />
-  <Post
-    :content="this.post.content"
-    :userId="this.post.userId"
-    :imageUrl="this.post.imageUrl"
-    :createdAt="this.post.createdAt"
-    :postId="this.post._id"
-  />
+  <div id="main-body">
+    <CreatePost />
+    <Post @delete-post="deletePost" :posts="posts" />
+  </div>
 </template>
 
 <script>
 import authApi from "../services/api";
+import router from "../router/index";
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
-import { usePostStore } from "../stores/postStore";
+
 export default {
   name: "App",
   components: {
@@ -22,22 +19,43 @@ export default {
   },
   data() {
     return {
-      post: [],
+      posts: [],
     };
   },
-  mounted() {
-    authApi
-      .get("http://localhost:3000/api/post")
-      .then((res) => {
-        for (let i = 0; i < res.data.length; i++) {
-          this.post = res.data[i];
-          console.log(this.post);
-        }
+  created() {
+    this.posts = this.getPosts();
+  },
+  methods: {
+    //filte out the post with post id to be deleted
+    deletePost(id) {
+      if (confirm("Vous-être sûr?")) {
+        authApi
+          .delete(`/post/${id}`)
+          .then(() => {
+            this.posts = this.posts.filter((post) => post.id !== id);
+            router.push("/");
+          })
+          .catch((error) => console.log(error));
+      }
+    },
 
-        console.log(res.data);
-      })
-      .catch((error) => console.log(error));
+    //get all post
+    getPosts() {
+      authApi
+        .get("/post")
+        .then((res) => {
+          this.posts = res.data;
+        })
+        .catch((error) => console.log(error));
+    },
   },
 };
 </script>
-<style></style>
+<style>
+#main-body {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1120px;
+}
+</style>

@@ -16,7 +16,7 @@
         </li>
       </ul>
     </div>
-    <div class="card-body">
+    <form class="card-body">
       <div class="tab-content" id="myTabContent">
         <div
           class="tab-pane fade show active"
@@ -24,93 +24,97 @@
           role="tabpanel"
           aria-labelledby="posts-tab"
         >
-          <div class="form-group">
-            <label class="sr-only" for="message">post</label>
+          <div name="inputContent" class="form-group">
             <textarea
               class="form-control"
-              id="message"
+              id="content"
               rows="3"
               placeholder="Quoi de neuf?"
-              v-model="this.post.content"
+              v-model="this.newPost.content"
             ></textarea>
           </div>
-        </div>
-        <div
-          class="tab-pane fade"
-          id="images"
-          role="tabpanel"
-          aria-labelledby="images-tab"
-        >
-          <div class="form-group">
-            <div class="custom-file">
-              <input type="file" class="custom-file-input" id="customFile" />
-              <label class="custom-file-label icon-color" for="customFile"
-                >Ajouter</label
-              >
-            </div>
-          </div>
-          <div class="py-4"></div>
         </div>
       </div>
       <div class="btn-toolbar justify-content-between">
         <div class="col-12 btn-group mt-2">
-          <button type="file" class="btn btn-color mx-3">
-            <label for="formFile"><i class="fas fa-images"></i></label>
+          <div class="avatar-zone btn btn-color overlay-layer">
             <input
-              @change="onSubmit"
-              name="imageUrl"
+              @change="onUpload"
+              name="inputImg"
               type="file"
-              class="form-control"
+              class="form-control upload_btn"
               id="formFile"
-              hidden
+              ref="fileInput"
             />
-          </button>
-          <button type="submit" @click="onUpload" class="btn btn-color">
+            <button type="file" class="btn btn-color">
+              <div for="formFile">
+                <i class="fas fa-images"></i>
+              </div>
+            </button>
+          </div>
+          <button
+            type="submit"
+            @click.prevent="onSubmit()"
+            class="btn btn-color"
+          >
             <i class="far fa-paper-plane"></i>
           </button>
         </div>
-        <div class="btn-group"></div>
       </div>
-    </div>
+    </form>
   </div>
 </template>
 
 <script>
+import router from "../router/index";
 import authApi from "../services/api";
-import { usePostStore } from "../stores/postStore";
+
 export default {
   data() {
     return {
-      post: {
+      newPost: {
         content: "",
         imageUrl: "",
       },
     };
   },
   methods: {
-    onSubmit(event) {
-      this.post.imageUrl = event.target.files[0];
+    onUpload() {
+      this.newPost.imageUrl = this.$refs.fileInput.files[0];
     },
 
-    onUpload() {
+    onSubmit() {
       const fd = new FormData();
-      fd.append("image", this.post.imageUrl);
-      fd.append("content", this.post.content);
-      console.log("hello==" + fd.get("content"));
+      if (this.newPost.imageUrl == "" && this.newPost.content == "") {
+        alert("Veuillez ajouter votre text ou image");
+      } else {
+        if (this.newPost.imageUrl) {
+          if (this.newPost.imageUrl.size >= 500000) {
+            alert("Le fichier ne doit pas dépasser 50ko");
+          } else {
+            fd.append("image", this.newPost.imageUrl);
+          }
+        }
+        if (this.newPost.content) {
+          if (this.newPost.content > 1000 || this.newPost.content < 0) {
+            alert("Vous pouvez écrire 1000 lettres");
+          } else {
+            fd.append("content", this.newPost.content);
+          }
+        }
 
-      authApi
-        .post("/post", fd, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((res) => {
-          const auth = usePostStore;
-          auth.createPost(res.data);
-          console.log("data=====" + res.data);
-        })
-        .catch((error) => console.log(error));
+        authApi
+          .post("/post", fd)
+          .then((res) => {
+            this.newPost.content = res.data.content;
+            this.newPost.imageUrl = res.data.imageUrl;
+            alert("Vous avez crée un post");
+            location.reload();
+          })
+          .catch((error) => console.log(error));
+      }
     },
   },
 };
 </script>
+<style></style>

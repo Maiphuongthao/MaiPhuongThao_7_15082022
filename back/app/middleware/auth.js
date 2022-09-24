@@ -9,16 +9,16 @@ module.exports = (req, res, next) => {
     //decode the token
 
     const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET);
-
+ 
     //get userId as decode token userID
     const userId = decodedToken.userId;
 
     //add this value to request to call it after
     req.auth = {
-      userId
+      userId,
     };
 
-    //Check if userId exist in body and if it isn't the same as userID of sauce then return error message, if not continue
+    //Check if userId exist in body and if it isn't the same as userID of post then return error message, if not continue
     if (req.body.userId && req.body.userId !== userId) {
       res.status(403).json({ error: "unauthorized requets" + error });
     } else {
