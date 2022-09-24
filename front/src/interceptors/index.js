@@ -16,35 +16,6 @@ const interceptors = () => {
       return Promise.reject(error);
     }
   );
-
-  let refresh = false;
-
-  authApi.interceptors.response.use(
-    (resp) => resp,
-    async (error) => {
-      if (error.response.status === 401 && !refresh) {
-        refresh = true;
-        const authStore = useAuthStore();
-        const { status, data } = await authApi.post(
-          "auth/refresh",
-          { refreshToken: authStore.refreshToken },
-          {
-            withCredentials: true,
-          }
-        );
-
-        if (status === 200) {
-          authApi.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${data.accessToken}`;
-
-          return authApi(error.config);
-        }
-      }
-      refresh = false;
-      return error;
-    }
-  );
 };
 
 export default interceptors;

@@ -205,7 +205,6 @@ export default {
       authApi
         .put("/auth", fd)
         .then(async (res) => {
-          console.log("res====" + res.data);
           const authStore = useAuthStore();
           authStore.updateUser(res.data);
           router.push("/user");

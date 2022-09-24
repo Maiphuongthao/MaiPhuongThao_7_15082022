@@ -81,7 +81,6 @@ export default {
   methods: {
     onUpload() {
       this.newPost.imageUrl = this.$refs.fileInput.files[0];
-      console.log("img==" + this.newPost.imageUrl);
     },
 
     onSubmit() {
@@ -110,11 +109,10 @@ export default {
             this.newPost.content = res.data.content;
             this.newPost.imageUrl = res.data.imageUrl;
             alert("Vous avez crée un post");
-            location.reload()
+            location.reload();
           })
           .catch((error) => console.log(error));
       }
-      
     },
   },
 };

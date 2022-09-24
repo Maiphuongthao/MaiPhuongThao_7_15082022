@@ -8,7 +8,6 @@ import UpdateUser from "../views/UpdateUser.vue";
 import NotFound from "../views/NotFound.vue";
 import PublicLayout from "../layouts/PublicLayout.vue";
 import MainLayout from "../layouts/MainLayout.vue";
-import OtherUser from "../views/OtherUser.vue";
 
 const publicRoutes = [
   {
@@ -50,11 +49,6 @@ const mainRoutes = [
         path: "/",
         name: "home",
         component: Home,
-      },
-      {
-        path: "/user/:id",
-        name: "OtherUser",
-        component: OtherUser,
       },
 
       {

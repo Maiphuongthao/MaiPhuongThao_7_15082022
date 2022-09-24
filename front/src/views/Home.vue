@@ -10,7 +10,6 @@ import authApi from "../services/api";
 import router from "../router/index";
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
-import { useAuthStore } from "../stores/authStore";
 
 export default {
   name: "App",
@@ -27,10 +26,9 @@ export default {
     this.posts = this.getPosts();
   },
   methods: {
+    //filte out the post with post id to be deleted
     deletePost(id) {
       if (confirm("Vous-être sûr?")) {
-        //const id = this.posts.map((post) => post.id).indexOf(this.post._id); // find index of your object
-        //this.posts.splice(id, 1);
         authApi
           .delete(`/post/${id}`)
           .then(() => {
@@ -41,12 +39,12 @@ export default {
       }
     },
 
+    //get all post
     getPosts() {
       authApi
         .get("/post")
         .then((res) => {
           this.posts = res.data;
-          console.log(res.data);
         })
         .catch((error) => console.log(error));
     },

@@ -54,8 +54,9 @@
         </div>
 
         <div class="mx-4">
-          <div v-if="(this.displayPost = this.post.imageUrl)">
+          <div id="post-image">
             <img
+              v-if="post.imageUrl"
               class="mx-auto my-4 d-flex"
               width="250"
               :src="this.post.imageUrl"
@@ -218,19 +219,16 @@ export default {
     checkAuthUser() {
       const auth = useAuthStore();
       this.userInStore = auth.user;
-      console.log("userin==" + this.userInStore);
       return this.userInStore;
     },
 
     userOfPost(id) {
       id = this.post.userId;
-      console.log("user" + id);
       authApi
         .get(`/auth/${id}`)
         .then((res) => {
           this.user = res.data;
 
-          console.log("data" + this.user.username);
         })
         .catch((error) => console.log(error));
     },
@@ -248,8 +246,6 @@ export default {
       } else {
         like = 1;
       }
-
-      console.log("like" + like);
       authApi
         .post(`/post/${id}`, { likes: like })
         .then((res) => {
@@ -275,6 +271,7 @@ export default {
           fd.append("image", this.updatedPost.imageUrl);
         }
       }
+
       if (!this.updatedPost.content == "") {
         fd.append("content", this.updatedPost.content);
       }
@@ -282,7 +279,6 @@ export default {
       authApi
         .put(`/post/${id}`, fd)
         .then((res) => {
-          console.log("res====" + res.data);
           this.updatedPost.content = res.data.content;
           this.updatedPost.imageUrl = res.data.imageUrl;
 
