@@ -162,12 +162,19 @@ exports.likePost = (req, res, next) => {
     );
 };
 
+const findAdmin = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      return user.isAdmin;
+    })
+    .catch();
+};
+
 ////////////////////UPDATE POST//////////////////////////////
 exports.updatePost = (req, res, next) => {
   //get post id
   Post.findById(req.params.id).then((post) => {
-    console.log("post " + post);
-    if (post.userId !== req.auth.userId) {
+    if (post.userId !== req.auth.userId || findAdmin(req) == false) {
       res.status(403).json({
         error: "Unauthorized request!",
       });
@@ -219,7 +226,7 @@ exports.updatePost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   Post.findByIdAndDelete(req.params.id)
     .then((post) => {
-      if (post.userId !== req.auth.userId) {
+      if (post.userId !== req.auth.userId || findAdmin(req) == false) {
         return res.status(403).json({
           error: "Unauthorized request!",
         });

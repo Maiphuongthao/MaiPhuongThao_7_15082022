@@ -61,7 +61,11 @@ const speedLimiter = slowDown({
 });
 //  apply to all requests
 app.use(speedLimiter);
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 
 //running port
 const PORT = process.env.PORT || 3000;
