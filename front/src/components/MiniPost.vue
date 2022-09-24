@@ -8,30 +8,30 @@
             id="profile-bar"
           >
             <div class="m-4">
-              <router-link to="/otherUser">
-                <img
-                  class="rounded-circle"
-                  width="50"
-                  :src="user.imageUrl"
-                  :alt="'photo de ' + user.username"
-              /></router-link>
+              <img
+                class="rounded-circle"
+                width="50"
+                :src="user.imageUrl"
+                :alt="'photo de ' + user.username"
+              />
             </div>
             <div class="ml-2">
-              <router-link to="/otherUser">
-                <div
-                  value="this.post.userId"
-                  class="h6 m-0 profile-name"
-                  @click="getUser"
-                >
-                  {{ user.username }}
-                </div></router-link
+              <div
+                value="this.post.userId"
+                class="h6 m-0 profile-name"
+                @click="getUser"
               >
+                {{ user.username }}
+              </div>
             </div>
           </div>
 
           <div
+            v-if="
+              this.post.userId === userInStore._id ||
+              userInStore.isAdmin === true
+            "
             class="d-flex flex-row gap-3 align-items-center"
-            v-if="isModificable(post.userId)"
           >
             <div
               data-bs-toggle="modal"
@@ -192,10 +192,8 @@
 </template>
 
 <script>
-import router from "../router/index";
 import authApi from "../services/api";
 import { useAuthStore } from "../stores/authStore";
-import { usePostStore } from "../stores/postStore";
 
 export default {
   props: {
@@ -204,6 +202,7 @@ export default {
   data() {
     return {
       user: {},
+      userInStore: {},
       displayPost: "",
       updatedPost: {
         content: "",
@@ -211,17 +210,16 @@ export default {
       },
     };
   },
-  mounted() {
+  created() {
     this.userOfPost();
+    this.checkAuthUser();
   },
   methods: {
-    isModificable(userId) {
+    checkAuthUser() {
       const auth = useAuthStore();
-      const userFromAuthStore = auth.user;
-      return (
-        this.post.userId === userFromAuthStore._id ||
-        userFromAuthStore.isAdmin === true
-      );
+      this.userInStore = auth.user;
+      console.log("userin==" + this.userInStore);
+      return this.userInStore;
     },
 
     userOfPost(id) {
@@ -237,13 +235,6 @@ export default {
         .catch((error) => console.log(error));
     },
 
-    checkAdmin() {
-      if (this.user.userId === this.post.userId || this.user.isAdmin === true) {
-        this.showModif = !this.showModif;
-      } else {
-        this.showModif = false;
-      }
-    },
     likePost(id) {
       id = this.post._id;
       let like;
@@ -294,6 +285,7 @@ export default {
           console.log("res====" + res.data);
           this.updatedPost.content = res.data.content;
           this.updatedPost.imageUrl = res.data.imageUrl;
+
           location.reload();
           alert("Vos modifications sont bien enregistrées ");
         })

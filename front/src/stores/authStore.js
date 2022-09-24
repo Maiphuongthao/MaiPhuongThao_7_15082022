@@ -27,7 +27,7 @@ export const useAuthStore = defineStore("store", {
     }, //tout est null
 
     updateUser(data) {
-      this.user = data.user;
+      this.user = data.userUpdate;
     }, // comme login
     returnRefreshToken(data) {
       this.accessToken = data.token;

@@ -8,7 +8,6 @@
 <script>
 import authApi from "../services/api";
 import router from "../router/index";
-import { usePostStore } from "../stores/postStore";
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
 import { useAuthStore } from "../stores/authStore";
@@ -36,7 +35,7 @@ export default {
           .delete(`/post/${id}`)
           .then(() => {
             this.posts = this.posts.filter((post) => post.id !== id);
-            location.reload();
+            router.push("/");
           })
           .catch((error) => console.log(error));
       }
@@ -44,13 +43,10 @@ export default {
 
     getPosts() {
       authApi
-        .get("http://localhost:3000/api/post")
+        .get("/post")
         .then((res) => {
           this.posts = res.data;
           console.log(res.data);
-
-          const store = usePostStore();
-          store.getPosts(res.data);
         })
         .catch((error) => console.log(error));
     },

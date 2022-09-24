@@ -110,14 +110,13 @@ export default {
             this.newPost.content = res.data.content;
             this.newPost.imageUrl = res.data.imageUrl;
             alert("Vous avez crée un post");
-            location.reload();
+            location.reload()
           })
           .catch((error) => console.log(error));
       }
+      
     },
   },
 };
 </script>
-<style>
-
-</style>
+<style></style>

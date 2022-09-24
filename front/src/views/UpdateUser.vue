@@ -196,23 +196,19 @@ export default {
       if (!this.updateUser.username == "") {
         fd.append("username", this.updateUser.username);
       }
-
       if (!this.updateUser.email == "") {
         fd.append("email", this.updateUser.email);
       }
-
       if (!this.updateUser.password == "") {
         fd.append("password", this.updateUser.password);
       }
-
       authApi
         .put("/auth", fd)
         .then(async (res) => {
           console.log("res====" + res.data);
           const authStore = useAuthStore();
-
           authStore.updateUser(res.data);
-
+          router.push("/user");
           alert("Vos modifications sont bien enregistrées ");
         })
         .catch((error) => console.log(error));
