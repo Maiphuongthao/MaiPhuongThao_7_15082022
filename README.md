@@ -4,7 +4,7 @@ This is the last project of OpenClassooms Web Developper path.
 
 
 
-##BACKEND
+## BACKEND
 
 
 ### Requirements
@@ -16,7 +16,7 @@ npm, version 8.3.1 or later
 
 nodemon, 2.0.19 or later
  
-Vue latest version with Vite
+
 
 
 
@@ -39,6 +39,13 @@ Create your own ``.env`` file, copy the variables from ``.env.example`` file and
 ## Front-end
 
 Return to the root directory then move to directory ```front```, then run:
+
+
+### Requirements
+Vue latest version with Vite
+
+
+### Getting started
 
 
 ```bash
