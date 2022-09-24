@@ -24,10 +24,10 @@ const interceptors = () => {
     async (error) => {
       if (error.response.status === 401 && !refresh) {
         refresh = true;
-
+        const authStore = useAuthStore();
         const { status, data } = await authApi.post(
           "auth/refresh",
-          {},
+          { refreshToken: authStore.refreshToken },
           {
             withCredentials: true,
           }
@@ -36,7 +36,7 @@ const interceptors = () => {
         if (status === 200) {
           authApi.defaults.headers.common[
             "Authorization"
-          ] = `Bearer ${data.token}`;
+          ] = `Bearer ${data.accessToken}`;
 
           return authApi(error.config);
         }
