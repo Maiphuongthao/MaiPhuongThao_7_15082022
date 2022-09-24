@@ -17,38 +17,32 @@ const interceptors = () => {
     }
   );
 
+  let refresh = false;
+
   authApi.interceptors.response.use(
-    (res) => {
-      return res;
-    },
+    (resp) => resp,
     async (error) => {
-      const originalConfig = error.config;
-      if (originalConfig.url !== "/auth/login" && error.response) {
-        if (error.response.status === 403 && !originalConfig._retry) {
-          originalConfig._retry = true;
-          try {
-            const authStore = useAuthStore();
-            console.log("refresh==" + authStore.refreshToken);
-            //refresh the token and retry once
-            const refresh = await authApi.post("/auth/refresh", {
-              refreshToken: authStore.refreshToken,
-            });
-            console.log("auth==" + refresh);
-            const { accessToken } = refresh.data;
+      if (error.response.status === 401 && !refresh) {
+        refresh = true;
 
-            authStore.returnRefreshToken(accessToken);
-            console.log("auth==" + accessToken);
-
-            originalConfig.headers.Authorization = "Bearer " + accessToken;
-
-            return authApi(originalConfig);
-          } catch (_error) {
-            console.error("Refresh token failed");
-            return Promise.reject(_error);
+        const { status, data } = await authApi.post(
+          "auth/refresh",
+          {},
+          {
+            withCredentials: true,
           }
+        );
+
+        if (status === 200) {
+          authApi.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${data.token}`;
+
+          return authApi(error.config);
         }
       }
-      return Promise.reject(error);
+      refresh = false;
+      return error;
     }
   );
 };
