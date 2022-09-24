@@ -81,15 +81,6 @@ exports.login = (req, res, next) => {
               .status(401)
               .json({ error: "Your password is incorrect !" });
           }
-          //Creating an access token
-
-          const accessToken = jwt.sign(
-            //userId entant playload
-            { userId: user._id },
-            //random token dispo pendant 24h
-            process.env.TOKEN_SECRET,
-            { expiresIn: "20s" }
-          );
 
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired
           const refreshToken = jwt.sign(
@@ -106,13 +97,19 @@ exports.login = (req, res, next) => {
             //cookie is allowed in intersite context == protect from server attacking
             //sameSite: "None", //cross-site cookie
             //secure: true,
-            maxAge: 1000 * 60 * 60 * 24,
+            maxAge: "24h",
           });
 
           res.status(200).json({
             userId: user._id,
             //chiffrer un nouveau token
-            token: accessToken,
+            token: jwt.sign({
+              userId: user._id // the method takes two arguments : 
+          }, // a response object and
+          process.env.TOKEN_SECRET, { // a secret key
+              expiresIn: "20s" // expires after 15 minutes
+          }
+      ),
             refreshToken: refreshToken,
             //return user as correct user
             userSend,
@@ -151,7 +148,7 @@ exports.refresh = (req, res) => {
         },
         process.env.TOKEN_SECRET,
         {
-          expiresIn: 15 * 60 * 60,
+          expiresIn: "24h",
         }
       );
       res.json({
@@ -202,7 +199,7 @@ exports.refresh = (req, res) => {
 exports.logout = (req, res, next) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(204); //No content
-  User.findOne({ _id: req.auth.userId })
+  User.findById({ _id: req.auth.userId })
     .then(() => {
       res.clearCookie("jwt", {
         httpOnly: true,
