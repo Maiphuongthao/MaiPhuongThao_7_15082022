@@ -85,7 +85,7 @@ exports.login = (req, res, next) => {
 
           const accessToken = jwt.sign(
             //userId entant playload
-            { userId: user._id },
+            { userId: user._id, isAdmin: user.isAdmin },
             //random token dispo pendant 24h
             process.env.TOKEN_SECRET,
             { expiresIn: "24h" }
@@ -94,14 +94,14 @@ exports.login = (req, res, next) => {
           //Declare refreshToken method ( res object & jwt key) and reassigning it to httpOnly-cookie: to regenerate newtoken once old one is expired
           const refreshToken = jwt.sign(
             //userId entant playload
-            { userId: user._id },
+            { userId: user._id, isAdmin: user.isAdmin },
             //random token dispo pendant 24h
             process.env.REFRESH_TOKEN,
             { expiresIn: "24h" }
           );
           const userSend = hateoasLinks(req, user, user._id);
 
-          res.cookie("jwt", refreshToken, {
+          res.cookie("jwt", accessToken, {
             httpOnly: true, //accessible only by web server
             //cookie is allowed in intersite context == protect from server attacking
             //sameSite: "None", //cross-site cookie
@@ -110,6 +110,7 @@ exports.login = (req, res, next) => {
           });
 
           res.status(200).json({
+            isAdmin:user.isAdmin,
             userId: user._id,
             //chiffrer un nouveau token
             token: accessToken,
