@@ -56,7 +56,7 @@
         <div class="mx-4">
           <div id="post-image">
             <img
-              v-if="post.imageUrl"
+              v-if="post.imageUrl !== 'http://localhost:3000undefined'"
               class="mx-auto my-4 d-flex"
               width="250"
               :src="this.post.imageUrl"
@@ -228,7 +228,6 @@ export default {
         .get(`/auth/${id}`)
         .then((res) => {
           this.user = res.data;
-
         })
         .catch((error) => console.log(error));
     },
