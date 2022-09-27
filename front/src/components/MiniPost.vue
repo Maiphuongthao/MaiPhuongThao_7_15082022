@@ -41,7 +41,10 @@
               <i class="fas fa-pen"></i>Modifier
             </div>
 
-            <div @click="deletePost" class="d-flex align-items-center icon">
+            <div
+              @click.prevent="deletePost(post._id)"
+              class="d-flex align-items-center icon"
+            >
               <i class="fas fa-trash-alt"></i>Supprimer
             </div>
           </div>

@@ -84,6 +84,7 @@ export default {
     },
 
     onSubmit() {
+      
       const fd = new FormData();
       if (this.newPost.imageUrl == "" && this.newPost.content == "") {
         alert("Veuillez ajouter votre text ou image");
