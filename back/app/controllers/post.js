@@ -214,14 +214,12 @@ exports.updatePost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   Post.findByIdAndDelete(req.params.id)
     .then((post) => {
-      const filename = post.imageUrl.split("/images/")[1];
-      fs.unlink(`images/${filename}`, function (err) {
-        if (err) throw err;
-        // if no error, file has been deleted successfully
-        Comment.deleteMany({ postId: req.params.id })
-          .then(() => res.sendStatus(204))
-          .catch((error) => res.status(400).json(error));
-      });
+      console.log("id " + post);
+      if (post.imageUrl) {
+        const filename = post.imageUrl.split("/images/")[1];
+        fs.unlinkSync(`images/${filename}`)
+      }
+      res.status(204).send()
     })
     .catch((error) =>
       res.status(500).json({
