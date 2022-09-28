@@ -207,7 +207,7 @@ export default {
         .then(async (res) => {
           const authStore = useAuthStore();
           authStore.updateUser(res.data);
-          router.push("/user");
+          router.push("/public");
           alert("Vos modifications sont bien enregistrées ");
         })
         .catch((error) => console.log(error));

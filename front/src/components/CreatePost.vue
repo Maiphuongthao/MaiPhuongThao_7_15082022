@@ -66,7 +66,6 @@
 </template>
 
 <script>
-import router from "../router/index";
 import authApi from "../services/api";
 
 export default {
@@ -79,12 +78,14 @@ export default {
     };
   },
   methods: {
+    getAllPost() {
+      this.$root.$refs.getPosts();
+    },
     onUpload() {
       this.newPost.imageUrl = this.$refs.fileInput.files[0];
     },
 
-    onSubmit() {
-      
+    async onSubmit() {
       const fd = new FormData();
       if (this.newPost.imageUrl == "" && this.newPost.content == "") {
         alert("Veuillez ajouter votre text ou image");
@@ -103,17 +104,16 @@ export default {
             fd.append("content", this.newPost.content);
           }
         }
+const self = this;
+        const res = await authApi.post("/post", fd);
 
-        authApi
-          .post("/post", fd)
-          .then((res) => {
-            this.newPost.content = res.data.content;
-            this.newPost.imageUrl = res.data.imageUrl;
-            alert("Vous avez crée un post");
-            location.reload();
-          })
-          .catch((error) => console.log(error));
+        this.newPost.content = res.data.content;
+        this.newPost.imageUrl = res.data.imageUrl;
+        alert("Vous avez crée un post");
+        return self.getAllPost()
       }
+      this.newPost.content = "";
+      this.newPost.imageUrl = "";
     },
   },
 };

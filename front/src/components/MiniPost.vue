@@ -159,7 +159,7 @@
                         ref="fileInput"
                       />
                       <div
-                        @click="$refs.fileInput.click()"
+                        @click.prevent="$refs.fileInput.click()"
                         type="file"
                         class="btn btn-color mx-3 overlay-layer"
                       >
@@ -184,6 +184,7 @@
                 type="button"
                 class="btn btn-outline-danger"
                 @click.prevent="onSubmitPost"
+                data-bs-dismiss="modal"
               >
                 Enregistrer
               </button>
@@ -196,6 +197,7 @@
 </template>
 
 <script>
+import router from "../router";
 import authApi from "../services/api";
 import { useAuthStore } from "../stores/authStore";
 
@@ -256,7 +258,9 @@ export default {
         })
         .catch((erreur) => console.log(erreur));
     },
-
+    getAllPost() {
+      this.$root.$refs.getPosts();
+    },
     deletePost(id) {
       this.$emit("delete-post", id);
     },
@@ -281,13 +285,17 @@ export default {
       authApi
         .put(`/post/${id}`, fd)
         .then((res) => {
+          const self = this;
           this.updatedPost.content = res.data.content;
           this.updatedPost.imageUrl = res.data.imageUrl;
 
-          location.reload();
           alert("Vos modifications sont bien enregistrées ");
+          return self.getAllPost();
         })
         .catch((error) => console.log(error));
+
+      this.updatedPost.content = "";
+      this.updatedPost.imageUrl = "";
     },
   },
 };

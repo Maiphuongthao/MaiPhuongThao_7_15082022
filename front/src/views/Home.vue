@@ -28,6 +28,7 @@ export default {
   },
   created() {
     this.posts = this.getPosts();
+    this.$root.$refs = this;
   },
   methods: {
 
