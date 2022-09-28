@@ -41,7 +41,10 @@
               <i class="fas fa-pen"></i>Modifier
             </div>
 
-            <div @click="deletePost" class="d-flex align-items-center icon">
+            <div
+              @click.prevent="deletePost(post._id)"
+              class="d-flex align-items-center icon"
+            >
               <i class="fas fa-trash-alt"></i>Supprimer
             </div>
           </div>
@@ -56,7 +59,7 @@
         <div class="mx-4">
           <div id="post-image">
             <img
-              v-if="post.imageUrl"
+              v-if="post.imageUrl !== 'http://localhost:3000undefined'"
               class="mx-auto my-4 d-flex"
               width="250"
               :src="this.post.imageUrl"
@@ -156,7 +159,7 @@
                         ref="fileInput"
                       />
                       <div
-                        @click="$refs.fileInput.click()"
+                        @click.prevent="$refs.fileInput.click()"
                         type="file"
                         class="btn btn-color mx-3 overlay-layer"
                       >
@@ -181,6 +184,7 @@
                 type="button"
                 class="btn btn-outline-danger"
                 @click.prevent="onSubmitPost"
+                data-bs-dismiss="modal"
               >
                 Enregistrer
               </button>
@@ -193,6 +197,7 @@
 </template>
 
 <script>
+import router from "../router";
 import authApi from "../services/api";
 import { useAuthStore } from "../stores/authStore";
 
@@ -228,7 +233,6 @@ export default {
         .get(`/auth/${id}`)
         .then((res) => {
           this.user = res.data;
-
         })
         .catch((error) => console.log(error));
     },
@@ -254,7 +258,9 @@ export default {
         })
         .catch((erreur) => console.log(erreur));
     },
-
+    getAllPost() {
+      this.$root.$refs.getPosts();
+    },
     deletePost(id) {
       this.$emit("delete-post", id);
     },
@@ -279,13 +285,17 @@ export default {
       authApi
         .put(`/post/${id}`, fd)
         .then((res) => {
+          const self = this;
           this.updatedPost.content = res.data.content;
           this.updatedPost.imageUrl = res.data.imageUrl;
 
-          location.reload();
           alert("Vos modifications sont bien enregistrées ");
+          return self.getAllPost();
         })
         .catch((error) => console.log(error));
+
+      this.updatedPost.content = "";
+      this.updatedPost.imageUrl = "";
     },
   },
 };

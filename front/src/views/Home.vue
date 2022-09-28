@@ -7,7 +7,7 @@
 
 <script>
 import authApi from "../services/api";
-import router from "../router/index";
+
 import CreatePost from "../components/CreatePost.vue";
 import Post from "../components/Post.vue";
 
@@ -20,22 +20,27 @@ export default {
   data() {
     return {
       posts: [],
+      newPost: {
+        content: "",
+        imageUrl: "",
+      },
     };
   },
   created() {
     this.posts = this.getPosts();
+    this.$root.$refs = this;
   },
   methods: {
+
+    
     //filte out the post with post id to be deleted
-    deletePost(id) {
+    async deletePost(id) {
       if (confirm("Vous-être sûr?")) {
-        authApi
-          .delete(`/post/${id}`)
-          .then(() => {
-            this.posts = this.posts.filter((post) => post.id !== id);
-            router.push("/");
-          })
-          .catch((error) => console.log(error));
+        let self = this;
+        const res = await authApi.delete(`/post/${id}`);
+        this.posts = this.posts.filter((post) => post.id !== id);
+        return self.getPosts();
+        //modification vers dom
       }
     },
 

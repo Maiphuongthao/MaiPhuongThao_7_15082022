@@ -162,63 +162,51 @@ exports.likePost = (req, res, next) => {
     );
 };
 
-const findAdmin = (req, res, next) => {
-  User.findById(req.auth.userId)
-    .then((user) => {
-      return user.isAdmin;
-    })
-    .catch();
-};
-
 ////////////////////UPDATE POST//////////////////////////////
 exports.updatePost = (req, res, next) => {
   //get post id
   Post.findById(req.params.id).then((post) => {
-    if (post.userId !== req.auth.userId || findAdmin(req) == false) {
-      res.status(403).json({
-        error: "Unauthorized request!",
-      });
-    } else {
-      const update = {};
-      if (req.body.content) {
-        update.content = req.body.content;
-      }
+    console.log(req.auth.isAdmin);
 
-      const postObject = req.file
-        ? {
-            ...update,
-            imageUrl: `/images/${req.file.filename}`,
-          }
-        : {
-            ...update,
-          };
-
-      try {
-        if (postObject.imageUrl) {
-          const filename = post.imageUrl.split("/images/")[1];
-          fs.unlinkSync(`images/${filename}`);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-      Post.findByIdAndUpdate(
-        { _id: req.params.id },
-        { ...postObject },
-        {
-          new: true,
-          upsert: true,
-          setDefaultsOnInsert: true,
-        }
-      )
-        .then((postUpdated) =>
-          res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id))
-        )
-        .catch((error) =>
-          res.status(400).json({
-            error,
-          })
-        );
+    const update = {};
+    if (req.body.content) {
+      update.content = req.body.content;
     }
+
+    const postObject = req.file
+      ? {
+          ...update,
+          imageUrl: `/images/${req.file.filename}`,
+        }
+      : {
+          ...update,
+        };
+
+    try {
+      if (postObject.imageUrl) {
+        const filename = post.imageUrl.split("/images/")[1];
+        fs.unlinkSync(`images/${filename}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    Post.findByIdAndUpdate(
+      { _id: req.params.id },
+      { ...postObject },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    )
+      .then((postUpdated) =>
+        res.status(200).json(hateoasLinks(req, postUpdated, postUpdated._id))
+      )
+      .catch((error) =>
+        res.status(400).json({
+          error,
+        })
+      );
   });
 };
 
@@ -226,19 +214,12 @@ exports.updatePost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   Post.findByIdAndDelete(req.params.id)
     .then((post) => {
-      if (post.userId !== req.auth.userId || findAdmin(req) == false) {
-        return res.status(403).json({
-          error: "Unauthorized request!",
-        });
+      console.log("id " + post);
+      if (post.imageUrl) {
+        const filename = post.imageUrl.split("/images/")[1];
+        fs.unlinkSync(`images/${filename}`)
       }
-      const filename = post.imageUrl.split("/images/")[1];
-      fs.unlink(`images/${filename}`, function (err) {
-        if (err) throw err;
-        // if no error, file has been deleted successfully
-        Comment.deleteMany({ postId: req.params.id })
-          .then(() => res.sendStatus(204))
-          .catch((error) => res.status(400).json(error));
-      });
+      res.status(204).send()
     })
     .catch((error) =>
       res.status(500).json({

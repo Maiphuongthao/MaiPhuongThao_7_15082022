@@ -99,7 +99,7 @@ export default {
     logIn() {
       authApi
         .post("http://localhost:3000/api/auth/login", this.user, {
-          withCredentials: true
+          withCredentials: true,
         })
         .then((res) => {
           if (!res.ok) {
