@@ -110,7 +110,7 @@ exports.login = (req, res, next) => {
           });
 
           res.status(200).json({
-            isAdmin:user.isAdmin,
+            isAdmin: user.isAdmin,
             userId: user._id,
             //chiffrer un nouveau token
             token: accessToken,
@@ -165,38 +165,6 @@ exports.refresh = (req, res) => {
     });
   }
 };
-/*exports.refresh = (req, res, next) => {
-  const cookies = req.cookies;
-
-  if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
-
-  //destructuring refreshtoken from cookie
-  const refreshToken = cookies.jwt;
-
-  //verifying refreshtoken
-  jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN,
-    async (error, decoded) => {
-      //wrong refresh token
-      if (error) return res.status(403).json({ message: "Forbidden" });
-
-      const foundUser = await User.findOne({
-        userId: decoded.userId,
-      }).exec();
-
-      //correct token ==send new access token
-      const accessToken = jwt.sign(
-        { userId: foundUser._id },
-        process.env.TOKEN_SECRET,
-        {
-          expiresIn: "24h",
-        }
-      );
-      res.json({ accessToken });
-    }
-  );
-};*/
 
 ///////////////////// LOGOUT /////////////////////////////////
 
@@ -299,11 +267,10 @@ exports.updateUser = (req, res, next) => {
           : {
               ...update,
             };
-        const filename = user.imageUrl.split("/images/")[1];
+
         try {
-          if (
-            userObject.imageUrl
-          ) {
+          if (userObject.imageUrl) {
+            const filename = user.imageUrl.split("/images/")[1];
             fs.unlinkSync(`images/${filename}`);
           }
         } catch (error) {
