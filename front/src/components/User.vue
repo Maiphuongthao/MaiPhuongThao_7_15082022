@@ -4,7 +4,7 @@
       <div class="user text-center pt-5">
         <div class="profile">
           <img
-            v-if="imageUrl"
+            v-if="imageUrl !== 'http://localhost:3000undefined'"
             v-bind:src="imageUrl"
             :alt="'photo profile de' + username"
             class="rounded-circle"

@@ -9,9 +9,17 @@
           >
             <div class="m-4">
               <img
+                v-if="user.imageUrl !== 'http://localhost:3000undefined'"
                 class="rounded-circle"
                 width="50"
                 :src="user.imageUrl"
+                :alt="'photo de ' + user.username"
+              />
+              <img
+                v-else
+                class="rounded-circle"
+                width="50"
+                src="../assets/default.png"
                 :alt="'photo de ' + user.username"
               />
             </div>
