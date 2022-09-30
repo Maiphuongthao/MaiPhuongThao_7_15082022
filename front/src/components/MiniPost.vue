@@ -86,7 +86,7 @@
             <button
               type="button"
               class="btn btn-color"
-              v-if="post.likes"
+              v-if="post.usersLiked.includes(userInStore._id)"
               @click.prevent="likePost(post._id)"
             >
               <i class="fa fa-gittip fa-lg"></i>J'aime
@@ -229,6 +229,9 @@ export default {
     this.checkAuthUser();
   },
   methods: {
+    getAllPost() {
+      this.$root.$refs.getPosts();
+    },
     checkAuthUser() {
       const auth = useAuthStore();
       this.userInStore = auth.user;
@@ -248,6 +251,7 @@ export default {
     likePost(id) {
       id = this.post._id;
       let like;
+      let self = this;
       const userLiked = this.post.usersLiked;
 
       const auth = useAuthStore();
@@ -261,14 +265,13 @@ export default {
       authApi
         .post(`/post/${id}`, { likes: like })
         .then((res) => {
-          location.reload();
-          return res;
+          console.log("res "+like)
+          self.getAllPost();
+          return like;
         })
         .catch((erreur) => console.log(erreur));
     },
-    getAllPost() {
-      this.$root.$refs.getPosts();
-    },
+
     deletePost(id) {
       this.$emit("delete-post", id);
     },
