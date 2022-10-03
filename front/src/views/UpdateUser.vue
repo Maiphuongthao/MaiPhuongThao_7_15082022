@@ -4,7 +4,7 @@
       <div class="col-md-3 border-right">
         <div class="d-flex flex-column align-items-center text-center pt-5">
           <img
-            v-if="this.user.imageUrl"
+            v-if="this.user.imageUrl !== 'http://localhost:3000undefined'"
             :src="`http://localhost:3000${this.user.imageUrl}`"
             :alt="'photo profile de' + this.user.username"
             class="rounded-circle"
@@ -166,7 +166,7 @@ export default {
     );
     return {
       schema,
-      user: [],
+      user: {},
       updateUser: {
         username: "",
         email: "",
@@ -194,13 +194,13 @@ export default {
           fd.append("image", this.updateUser.imageUrl);
         }
       }
-      if (!this.updateUser.username == "") {
+      if (this.updateUser.username !== "") {
         fd.append("username", this.updateUser.username);
       }
-      if (!this.updateUser.email == "") {
+      if (this.updateUser.email !== "") {
         fd.append("email", this.updateUser.email);
       }
-      if (!this.updateUser.password == "") {
+      if (this.updateUser.password !== "") {
         fd.append("password", this.updateUser.password);
       }
       authApi

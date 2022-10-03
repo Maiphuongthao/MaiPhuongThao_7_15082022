@@ -46,13 +46,14 @@
               id="formFile"
               ref="fileInput"
             />
-            <button type="file" class="btn btn-color">
+            <button name="image" type="file" class="btn btn-color">
               <div for="formFile">
                 <i class="fas fa-images"></i>
               </div>
             </button>
           </div>
           <button
+            name="create"
             type="submit"
             @click.prevent="onSubmit()"
             class="btn btn-color"
@@ -104,13 +105,13 @@ export default {
             fd.append("content", this.newPost.content);
           }
         }
-const self = this;
+        const self = this;
         const res = await authApi.post("/post", fd);
 
         this.newPost.content = res.data.content;
         this.newPost.imageUrl = res.data.imageUrl;
         alert("Vous avez crée un post");
-        return self.getAllPost()
+        return self.getAllPost();
       }
       this.newPost.content = "";
       this.newPost.imageUrl = "";
