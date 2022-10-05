@@ -79,12 +79,12 @@ Routes can be tested:
 | exportData | GET  | /api/auth/export /  |  export user's data to a .txt file |
 | updateUser | PUT | /api/auth/ |  update user's data |
 | deleteUser | DELETE | /api/auth/ |   delete user |
-| readOnePost | GET | /api/sauces/:id |  return the chosen post |
-| readPosts | GET | /api/sauces/ |   return all available posts |
-| createPost | POST | /api/sauces/ |   create a new post|
-| likePost | POST | /api/sauces/:id/like/ |  Like or dislike chosen post|
-| updatePost | PUT | /api/sauces/:id/ |   update post's information|
-| deletePost | DELETE | /api/sauces/:id/ |   delete chosen post|
+| readOnePost | GET | /api/post/:id |  return the chosen post |
+| readPosts | GET | /api/post/ |   return all available posts |
+| createPost | POST | /api/post/ |   create a new post|
+| likePost | POST | /api/post/:id/like/ |  Like or dislike chosen post|
+| updatePost | PUT | /api/post/:id/ |   update post's information|
+| deletePost | DELETE | /api/post/:id/ |   delete chosen post|
 
 
 
